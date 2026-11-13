@@ -1,9 +1,11 @@
 """
 Configurações do Shopping Pulse (protótipo — Hackarun Palmas).
 
-Decisão importante: o protótipo NÃO usa banco de dados.
-- Os dados vêm de arquivos JSON em /data e ficam em memória (apps/eventos/repositorio.py).
-- Sessões ficam em cookies assinados, então não precisamos de migrations.
+Persistência: SQLite (decisão D-004 em docs/DECISOES.md).
+- O arquivo db.sqlite3 fica na raiz do projeto e está fora do Git.
+- A carga inicial de eventos continua vindo de /data e a camada de dados ainda está em memória
+  (apps/eventos/repositorio.py); a migração para o banco é a próxima etapa.
+- Sessões continuam em cookies assinados (SESSION_ENGINE abaixo).
 """
 import os
 from pathlib import Path
@@ -31,6 +33,8 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split
 INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "django.contrib.contenttypes",
+    "django.contrib.auth",
     # Apps do projeto
     "apps.eventos",
     "apps.participacao",
@@ -43,6 +47,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -66,8 +71,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Sem banco de dados no protótipo
-DATABASES = {}
+# Banco SQLite (D-004). Arquivo ignorado pelo Git.
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
