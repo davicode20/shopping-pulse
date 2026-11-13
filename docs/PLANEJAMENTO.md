@@ -65,7 +65,7 @@ flowchart TB
         V2[Descobrir<br/>cartões swipe] --> V4
         V3[Ajude a decidir<br/>propostas] --> V4
         V5[Minha agenda] --> V4
-        QR((QR Code<br/>no local)) --> V6[Check-in]
+        QR(["QR Code no local"]) --> V6[Check-in]
         V6 --> V7[Avaliação pós-evento]
     end
     subgraph A["Área administrativa"]
@@ -352,13 +352,13 @@ O ciclo da solução termina em **novo planejamento**. Na vida real, a equipe de
 
 ```mermaid
 flowchart LR
-    A[Painel do Shopping Pulse] -->|clique em<br/>Exportar para o Miro| B[Backend Django]
-    B -->|Miro REST API| C[Quadro no Miro]
-    C --> D["🟩 Recomendações da IA<br/>(post-its por prioridade)"]
-    C --> E["🟨 Eventos sugeridos"]
-    C --> F["🟥 Alertas e pontos de melhoria"]
-    C --> G["📊 Indicadores-chave<br/>(cards com os números)"]
-    C --> H["📅 Linha do tempo<br/>da próxima programação"]
+    A[Painel do Shopping Pulse] -->|"Exportar para o Miro"| B[Backend Django]
+    B -->|"Miro REST API"| C[Quadro no Miro]
+    C --> D["Recomendações da IA: post-its por prioridade"]
+    C --> E["Eventos sugeridos"]
+    C --> F["Alertas e pontos de melhoria"]
+    C --> G["Indicadores-chave: cards com os números"]
+    C --> H["Linha do tempo da próxima programação"]
 ```
 
 **Como funciona**
