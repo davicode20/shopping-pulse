@@ -26,10 +26,10 @@
             </div>
             <div class="termometro mb-3"><span style="width: {{ evento.total_interessados|porcentagem_de:1000 }}%"></span></div>
             <div class="d-flex gap-2">
-                <button class="btn btn-suave flex-fill js-voto {% if evento.interessado %}ativo{% endif %}" data-evento="{{ evento.id }}" data-acao="interesse">
+                <button type="button" class="btn btn-suave flex-fill js-voto {% if evento.interessado %}ativo{% endif %}" aria-pressed="{{ evento.interessado|yesno:'true,false' }}" data-evento="{{ evento.id }}" data-acao="interesse">
                     <i class="bi bi-heart{% if evento.interessado %}-fill{% endif %}"></i> Tenho interesse
                 </button>
-                <button class="btn flex-fill js-voto {% if evento.vou %}btn-pulse{% else %}btn-suave{% endif %}" data-evento="{{ evento.id }}" data-acao="presenca">
+                <button type="button" class="btn flex-fill js-voto {% if evento.vou %}btn-pulse{% else %}btn-suave{% endif %}" aria-pressed="{{ evento.vou|yesno:'true,false' }}" data-evento="{{ evento.id }}" data-acao="presenca">
                     <i class="bi bi-calendar-check"></i> Eu iria!
                 </button>
             </div>
@@ -43,25 +43,35 @@
 
 {% block scripts %}
 <script>
-document.querySelectorAll(".js-voto").forEach(btn => btn.addEventListener("click", async () => {
+function pintarVoto(bI, bV, interessado, vou) {
+    bI.classList.toggle("ativo", interessado);
+    bI.setAttribute("aria-pressed", interessado);
+    bI.querySelector("i").className = "bi " + (interessado ? "bi-heart-fill" : "bi-heart");
+    bV.classList.toggle("btn-pulse", vou);
+    bV.classList.toggle("btn-suave", !vou);
+    bV.setAttribute("aria-pressed", vou);
+}
+
+document.querySelectorAll(".js-voto").forEach(btn => btn.addEventListener("click", () => {
     const evento = btn.dataset.evento;
     const card = btn.closest(".card-proposta");
     const [bI, bV] = card.querySelectorAll(".js-voto");
-    let r;
-    if (btn.dataset.acao === "interesse") {
-        const ativo = bI.classList.contains("ativo");
-        r = await enviar("{% url 'participacao:interesse' %}", { evento_id: evento, acao: ativo ? "remover" : "interesse" });
-        bI.classList.toggle("ativo", r.interessado);
-        bI.querySelector("i").className = "bi " + (r.interessado ? "bi-heart-fill" : "bi-heart");
-        if (!r.interessado) bV.className = bV.className.replace("btn-pulse", "btn-suave");
-        mostrarToast(r.interessado ? "💜 Voto registrado!" : "Voto removido");
-    } else {
-        r = await enviar("{% url 'participacao:presenca' %}", { evento_id: evento });
-        bV.classList.toggle("btn-pulse", r.vou); bV.classList.toggle("btn-suave", !r.vou);
-        if (r.vou) { bI.classList.add("ativo"); bI.querySelector("i").className = "bi bi-heart-fill"; mostrarToast("🎉 Anotado: você iria!"); }
-    }
-    card.querySelector("[data-total-interessados]").textContent = formatarNumero(r.total_interessados);
-    card.querySelector(".termometro span").style.width = Math.min(100, r.total_interessados / 10) + "%";
+    // trava o card inteiro: os dois botões mexem no mesmo voto
+    comBotao(card, async () => {
+        let r;
+        if (btn.dataset.acao === "interesse") {
+            const ativo = bI.classList.contains("ativo");
+            r = await enviar("{% url 'participacao:interesse' %}", { evento_id: evento, acao: ativo ? "remover" : "interesse" });
+            pintarVoto(bI, bV, r.interessado, r.interessado && bV.classList.contains("btn-pulse"));
+            mostrarToast(r.interessado ? "💜 Voto registrado!" : "Voto removido");
+        } else {
+            r = await enviar("{% url 'participacao:presenca' %}", { evento_id: evento });
+            pintarVoto(bI, bV, r.vou || bI.classList.contains("ativo"), r.vou);
+            mostrarToast(r.vou ? "🎉 Anotado: você iria!" : "Presença desmarcada");
+        }
+        atualizarTotal(evento, r.total_interessados);
+        card.querySelector(".termometro span").style.width = Math.min(100, r.total_interessados / 10) + "%";
+    });
 }));
 </script>
 {% endblock %}

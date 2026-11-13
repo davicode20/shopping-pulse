@@ -2,12 +2,12 @@
 {% load pulse %}
 
 {% block conteudo %}
-<div class="descobrir-topo d-flex justify-content-between align-items-center">
+<div class="descobrir-topo d-flex justify-content-between align-items-center gap-2">
     <div>
         <h1 class="h5 mb-0">Descobrir</h1>
-        <small class="text-2"><span id="restantes">{{ eventos|length }}</span> experiências para você avaliar</small>
+        <small class="text-2"><span id="restantes">{{ eventos|length }}</span> experiências para avaliar</small>
     </div>
-    <a href="{% url 'eventos:agenda' %}" class="btn-suave btn btn-sm"><i class="bi bi-calendar-heart"></i> Agenda</a>
+    <a href="{% url 'eventos:agenda' %}" class="btn-suave btn btn-sm text-nowrap flex-shrink-0"><i class="bi bi-calendar-heart"></i> Agenda</a>
 </div>
 
 <div class="deck" id="deck" data-url="{% url 'participacao:interesse' %}">
@@ -42,9 +42,9 @@
 </div>
 
 <div class="deck-acoes" {% if not eventos %}hidden{% endif %} id="deckAcoes">
-    <button class="btn-passo" id="btnPasso" aria-label="Não tenho interesse"><i class="bi bi-x-lg"></i></button>
-    <button class="btn-quero" id="btnQuero" aria-label="Tenho interesse"><i class="bi bi-heart-fill"></i></button>
-    <button class="btn-info" id="btnInfo" aria-label="Ver detalhes"><i class="bi bi-info-lg"></i></button>
+    <button type="button" class="btn-passo" id="btnPasso" aria-label="Não tenho interesse"><i class="bi bi-x-lg"></i></button>
+    <button type="button" class="btn-quero" id="btnQuero" aria-label="Tenho interesse"><i class="bi bi-heart-fill"></i></button>
+    <button type="button" class="btn-info" id="btnInfo" aria-label="Ver detalhes"><i class="bi bi-info-lg"></i></button>
 </div>
 <p class="dica-swipe" {% if not eventos %}hidden{% endif %}>Arraste para a direita se quiser ir, para a esquerda se não curtir.</p>
 

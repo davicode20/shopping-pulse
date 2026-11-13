@@ -10,7 +10,7 @@
                 <span class="badge-status status-{{ evento.status }}">{% if evento.status == 'proposta' %}<i class="bi bi-lightbulb"></i>{% endif %}{{ evento.status_nome }}</span>
                 <h3>{{ evento.nome }}</h3>
             </div>
-            <button class="btn-coracao {% if evento.interessado %}ativo{% endif %}" data-evento="{{ evento.id }}" data-url="{% url 'participacao:interesse' %}" aria-label="Tenho interesse">
+            <button class="btn-coracao {% if evento.interessado %}ativo{% endif %}" data-evento="{{ evento.id }}" data-url="{% url 'participacao:interesse' %}" type="button" aria-label="Tenho interesse em {{ evento.nome }}" aria-pressed="{{ evento.interessado|yesno:'true,false' }}">
                 <i class="bi {% if evento.interessado %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
             </button>
         </div>

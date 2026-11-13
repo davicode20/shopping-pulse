@@ -23,7 +23,7 @@
     <h1 class="h4 mb-3">{{ evento.nome }}</h1>
     {% if erro %}<div class="alert alert-danger alert-pulse">{{ erro }}</div>{% endif %}
 
-    <form method="post">
+    <form method="post" id="formAvaliacao" novalidate>
         {% csrf_token %}
         <div class="card-form text-center">
             <h3>Como foi sua experiência?</h3>
@@ -33,7 +33,7 @@
                 <label for="nota{{ n }}" title="{{ n }} estrela{{ n|pluralize }}"><i class="bi bi-star-fill"></i></label>
                 {% endfor %}
             </div>
-            <small class="text-2" id="notaTexto">Toque nas estrelas</small>
+            <small class="text-2" id="notaTexto" aria-live="polite">Toque nas estrelas</small>
         </div>
 
         <div class="card-form">
@@ -55,7 +55,7 @@
             <textarea name="comentario" class="form-control" rows="2" maxlength="280" placeholder="Quer deixar um comentário?" style="border-radius:12px"></textarea>
         </div>
 
-        <button class="btn btn-pulse w-100 py-3 mb-3"><i class="bi bi-send-fill"></i> Enviar avaliação</button>
+        <button type="submit" class="btn btn-pulse w-100 py-3 mb-3" id="btnEnviar"><i class="bi bi-send-fill"></i> Enviar avaliação</button>
     </form>
 </div>
 {% endif %}
@@ -64,9 +64,28 @@
 {% block scripts %}
 <script>
 const textos = { 1: "Não gostei 😞", 2: "Poderia ser melhor 😐", 3: "Foi ok 🙂", 4: "Gostei muito! 😄", 5: "Incrível! 🤩" };
+const notaTexto = document.getElementById("notaTexto");
 document.querySelectorAll('input[name="nota"]').forEach(i => i.addEventListener("change", () => {
-    document.getElementById("notaTexto").textContent = textos[i.value];
+    notaTexto.textContent = textos[i.value];
+    notaTexto.classList.remove("text-danger");
+    document.querySelector(".estrelas").classList.remove("erro");
 }));
+// Sem estrela escolhida, avisa em vez de "não fazer nada"; com estrela, evita envio duplo.
+const form = document.getElementById("formAvaliacao");
+if (form) form.addEventListener("submit", (e) => {
+    if (!form.querySelector('input[name="nota"]:checked')) {
+        e.preventDefault();
+        const estrelas = form.querySelector(".estrelas");
+        estrelas.classList.remove("erro"); void estrelas.offsetWidth; estrelas.classList.add("erro");
+        notaTexto.textContent = "Escolha de 1 a 5 estrelas para enviar";
+        notaTexto.classList.add("text-danger");
+        estrelas.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+    }
+    const botao = document.getElementById("btnEnviar");
+    botao.disabled = true;
+    botao.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+});
 {% if enviado %}confete(60);{% endif %}
 </script>
 {% endblock %}

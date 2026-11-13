@@ -39,20 +39,23 @@
     }
 
     // Arrastar (mouse e toque) com Pointer Events
-    let inicioX = 0, inicioY = 0, arrastando = null;
+    let inicioX = 0, inicioY = 0, dx = 0, dy = 0, arrastando = null, ponteiro = null;
 
     deck.addEventListener("pointerdown", (e) => {
+        // só o primeiro dedo / botão principal do mouse
+        if (arrastando || !e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
         const cartao = e.target.closest(".swipe-card");
         if (!cartao || cartao !== topo()) return;
         arrastando = cartao;
-        inicioX = e.clientX; inicioY = e.clientY;
+        ponteiro = e.pointerId;
+        inicioX = e.clientX; inicioY = e.clientY; dx = 0; dy = 0;
         cartao.classList.remove("voltando");
-        cartao.setPointerCapture(e.pointerId);
+        try { cartao.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro já liberado */ }
     });
 
     deck.addEventListener("pointermove", (e) => {
-        if (!arrastando) return;
-        const dx = e.clientX - inicioX, dy = e.clientY - inicioY;
+        if (!arrastando || e.pointerId !== ponteiro) return;
+        dx = e.clientX - inicioX; dy = e.clientY - inicioY;
         arrastando.style.transform = `translate(${dx}px, ${dy * 0.3}px) rotate(${dx / 14}deg)`;
         const forca = Math.min(Math.abs(dx) / LIMITE, 1);
         arrastando.querySelector(".selo-quero").style.opacity = dx > 0 ? forca : 0;
@@ -60,20 +63,21 @@
     });
 
     function soltar(e) {
-        if (!arrastando) return;
+        if (!arrastando || e.pointerId !== ponteiro) return;
         const cartao = arrastando;
         arrastando = null;
-        const dx = e.clientX - inicioX;
-        if (Math.abs(dx) > LIMITE) {
+        ponteiro = null;
+        // pointercancel (notificação, gesto do sistema, rolagem) nunca decide: o cartão só volta.
+        // Antes, o clientX do cancelamento podia vir 0 e registrar um "passo" sem querer.
+        const cancelado = e.type !== "pointerup";
+        if (!cancelado && Math.abs(dx) > LIMITE) {
             decidir(cartao, dx > 0);
         } else {
             cartao.classList.add("voltando");
-            cartao.style.transform = "";
+            arrumarPilha();
             cartao.querySelectorAll(".selo").forEach(s => s.style.opacity = 0);
             // toque sem arrastar: abre os detalhes
-            if (Math.abs(dx) < 5 && Math.abs(e.clientY - inicioY) < 5 && e.type === "pointerup") {
-                abrirDetalhe(cartao);
-            }
+            if (!cancelado && Math.abs(dx) < 8 && Math.abs(dy) < 8) abrirDetalhe(cartao);
         }
     }
     deck.addEventListener("pointerup", soltar);
@@ -93,8 +97,9 @@
 
     // Teclado (útil na apresentação pelo notebook): ← e →
     document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowRight") document.getElementById("btnQuero").click();
-        if (e.key === "ArrowLeft") document.getElementById("btnPasso").click();
+        if (e.repeat || e.target.closest("input, textarea, select, [contenteditable]")) return;
+        if (e.key === "ArrowRight") { e.preventDefault(); document.getElementById("btnQuero").click(); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); document.getElementById("btnPasso").click(); }
     });
 
     arrumarPilha();

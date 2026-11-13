@@ -7,8 +7,8 @@
         </div>
     </div>
     <div class="chips">
-        {% for chave, nome in faixas.items %}<button class="chip" data-faixa="{{ chave }}">{{ nome }}</button>{% endfor %}
-        <button class="chip text-2" data-faixa="pular">Prefiro não dizer</button>
+        {% for chave, nome in faixas.items %}<button type="button" class="chip" data-faixa="{{ chave }}">{{ nome }}</button>{% endfor %}
+        <button type="button" class="chip text-2" data-faixa="pular">Prefiro não dizer</button>
     </div>
 </div>
 {% endif %}
