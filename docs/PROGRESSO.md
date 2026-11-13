@@ -20,7 +20,7 @@ Entregar um fluxo funcional de descoberta de eventos, manifestação de interess
 - [x] Eventos e interações persistem entre reinícios (verificado entre dois processos)
 - [x] Comando `carregar_eventos` para atualizar os eventos a partir do JSON
 - [x] "Reiniciar demonstração" volta aos 12 eventos do JSON e à base simulada
-- [ ] Permitir login opcional de visitantes (exige decidir a ligação entre `Interacao` e o usuário)
+- [x] Login e cadastro opcionais de visitantes em `/participacao/conta/` (`3de1202`); ao entrar, as interações do navegador passam para a conta, sem mudar o modelo
 
 ### Autenticação do administrador (Etapa 4, `5345b35`)
 - [x] Administrador é um usuário do Django com `is_staff`, criado com `python manage.py definir_admin`
@@ -50,12 +50,15 @@ Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/
 | 2026-11-13 | Autenticação do administrador pelo `User` do Django, sessões no banco e testes de acesso | Equipe | `5345b35`; 13 testes passando |
 | 2026-11-13 | Testes de participação, persistência e leitura pelo painel | Equipe | `b5451cb`; 29 testes passando |
 | 2026-11-13 | Validação no navegador (Chrome, Playwright) dos fluxos de visitante e administrador | Equipe | 18 de 18 verificações; banco de desenvolvimento restaurado depois |
+| 2026-11-13 | Conta opcional de visitante, com vínculo das interações ao entrar | Equipe | `3de1202`; 41 testes passando |
 
 ## Impedimentos e riscos
 - A base de demonstração é gerada na primeira execução (cerca de 16.600 interações simuladas). Gerar a base de novo ao reiniciar leva cerca de 0,7 segundo.
 - O carregamento do painel leva cerca de 0,65 segundo com essa base. Pode ficar lento se o painel for atualizado com frequência; otimizar se necessário.
 - O banco de desenvolvimento não tem administrador ainda, então o painel só pode ser acessado depois de `definir_admin`.
 - Não há registro de quem fez cada ação no painel.
+- Vínculo de visitantes: ao entrar, as interações do navegador são movidas para a conta. Depois do logout, esse navegador volta a ser anônimo e não vê mais o histórico movido. Se a equipe preferir manter o histórico anônimo, é preciso copiar em vez de mover, o que duplicaria visitantes nas métricas.
+- A tela de conta de visitante ainda não foi validada no navegador.
 - Os 29 testes automatizados cobrem acesso, participação, persistência e leitura pelo painel. A validação no navegador foi feita manualmente, com um roteiro que não está no repositório.
 - O navegador mostrou um aviso de `navigator.vibrate` bloqueado pelo navegador. Não afeta o fluxo.
 
