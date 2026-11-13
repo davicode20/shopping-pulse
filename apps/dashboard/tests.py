@@ -91,11 +91,13 @@ class AcessoAdministrativoTests(TestCase):
     # --- administrador criado pelo comando ---
 
     def test_comando_definir_admin_cria_conta_de_equipe(self):
-        from django.core.management import call_command
+        import io
         from unittest import mock
 
+        from django.core.management import call_command
+
         with mock.patch("getpass.getpass", side_effect=[SENHA, SENHA]):
-            call_command("definir_admin", "--usuario", "novo-admin")
+            call_command("definir_admin", "--usuario", "novo-admin", stdout=io.StringIO())
         conta = get_user_model().objects.get(username="novo-admin")
         self.assertTrue(conta.is_staff)
         self.assertFalse(conta.is_superuser)
