@@ -50,6 +50,7 @@
         ponteiro = e.pointerId;
         inicioX = e.clientX; inicioY = e.clientY; dx = 0; dy = 0;
         cartao.classList.remove("voltando");
+        cartao.classList.add("arrastando"); // sem transição enquanto o dedo arrasta: o cartão segue o toque
         try { cartao.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro já liberado */ }
     });
 
@@ -65,6 +66,7 @@
     function soltar(e) {
         if (!arrastando || e.pointerId !== ponteiro) return;
         const cartao = arrastando;
+        cartao.classList.remove("arrastando");
         arrastando = null;
         ponteiro = null;
         // pointercancel (notificação, gesto do sistema, rolagem) nunca decide: o cartão só volta.

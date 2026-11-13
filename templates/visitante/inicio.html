@@ -12,7 +12,7 @@
     <span class="cta-icone"><i class="bi bi-fire"></i></span>
     <span class="flex-grow-1">
         <strong>Descobrir experiências</strong>
-        <small>Deslize os cartões: 💚 quero ir · ✖ não curti</small>
+        <small>Deslize os cartões e diga do que você gosta</small>
     </span>
     <i class="bi bi-chevron-right text-2"></i>
 </a>
@@ -22,7 +22,7 @@
 {% if recomendados %}
 <section class="secao">
     <div class="secao-titulo">
-        <h2>{% if personalizado %}✨ Para você{% else %}🔥 Em alta{% endif %}</h2>
+        <h2>{% if personalizado %}Para você{% else %}Em alta no shopping{% endif %}</h2>
         <a href="{% url 'eventos:agenda' %}">Minha agenda</a>
     </div>
     <div class="carrossel">
@@ -45,8 +45,8 @@
 
 {% if total_propostas and not categoria_atual %}
 <section class="secao">
-    <a href="{% url 'eventos:propostas' %}" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:#fff8e6;border:1px solid #ffe3a3;border-radius:18px;color:inherit">
-        <span style="font-size:1.8rem">🗳️</span>
+    <a href="{% url 'eventos:propostas' %}" class="faixa-propostas">
+        <span class="faixa-icone"><i class="bi bi-hand-thumbs-up"></i></span>
         <span class="flex-grow-1">
             <strong class="d-block">Ajude a decidir!</strong>
             <small class="text-2">{{ total_propostas }} ideia{{ total_propostas|pluralize }} de evento esperando seu voto antes de acontecer.</small>

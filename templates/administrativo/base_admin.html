@@ -55,10 +55,16 @@
 {% block scripts %}
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script>
-    Chart.defaults.font.family = "Poppins, system-ui, sans-serif";
-    Chart.defaults.color = "#6b6785";
+    Chart.defaults.font.family = "Jost, system-ui, sans-serif";
+    Chart.defaults.font.size = 12.5;
+    Chart.defaults.color = "#6f6556";
+    Chart.defaults.animation.duration = 700;
+    Chart.defaults.animation.easing = "easeOutQuart";
     Chart.defaults.plugins.legend.labels.usePointStyle = true;
-    Chart.defaults.plugins.tooltip.backgroundColor = "#14112b";
+    Chart.defaults.plugins.tooltip.backgroundColor = "#1d1812";
+    Chart.defaults.plugins.tooltip.titleColor = "#e3c58f";
+    Chart.defaults.plugins.tooltip.borderColor = "rgba(199, 151, 71, .4)";
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
     Chart.defaults.plugins.tooltip.padding = 10;
     Chart.defaults.plugins.tooltip.cornerRadius = 10;
 </script>

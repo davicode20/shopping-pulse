@@ -3,7 +3,7 @@
 
 {% block conteudo %}
 <section class="hero" style="padding-bottom:1.6rem">
-    <h1>🗳️ Ajude a decidir</h1>
+    <h1>Ajude a <span class="destaque">decidir</span></h1>
     <p>Estas ideias ainda não estão confirmadas. O shopping vai realizar as que tiverem mais interesse do público.</p>
 </section>
 
@@ -22,7 +22,7 @@
             <div class="small mb-2"><i class="bi bi-calendar-event"></i> Previsto para {{ evento.data_obj|date:"d \d\e F" }} · {{ evento.local }}</div>
             <div class="d-flex justify-content-between small mb-1">
                 <span><b data-total-interessados="{{ evento.id }}">{{ evento.total_interessados|num }}</b> interessados</span>
-                <span class="text-2">{% if forloop.first %}🔥 Mais votada{% endif %}</span>
+                <span class="selo-votada">{% if forloop.first %}<i class="bi bi-award"></i> Mais votada{% endif %}</span>
             </div>
             <div class="termometro mb-3"><span style="width: {{ evento.total_interessados|porcentagem_de:1000 }}%"></span></div>
             <div class="d-flex gap-2">

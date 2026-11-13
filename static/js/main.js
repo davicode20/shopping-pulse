@@ -62,7 +62,7 @@ function formatarNumero(valor, casas = 0) {
 }
 
 function confete(quantidade = 70) {
-    const cores = ["#6c2bd9", "#ff3d7f", "#ffb800", "#13b47e", "#29c6ff"];
+    const cores = ["#c79747", "#e3c58f", "#b07f32", "#f3ebde", "#8c6624", "#ffffff"];
     for (let i = 0; i < quantidade; i++) {
         const c = document.createElement("div");
         c.className = "confete";

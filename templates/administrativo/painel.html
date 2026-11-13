@@ -16,7 +16,7 @@
 </div>
 
 <!-- KPIs -->
-<div class="row g-3 mb-3">
+<div class="row g-3">
     <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="total_eventos"><div class="kpi-icone ic-roxo"><i class="bi bi-calendar3"></i></div><div class="kpi-rotulo">Eventos</div><div class="kpi-valor">–</div><div class="kpi-sub" id="subEventos">&nbsp;</div></div></div>
     <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="visitantes_engajados"><div class="kpi-icone ic-azul"><i class="bi bi-people"></i></div><div class="kpi-rotulo">Visitantes engajados</div><div class="kpi-valor">–</div><div class="kpi-sub">interagiram na plataforma</div></div></div>
     <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="total_interesses"><div class="kpi-icone ic-rosa"><i class="bi bi-heart"></i></div><div class="kpi-rotulo">Interesses</div><div class="kpi-valor">–</div><div class="kpi-sub">demonstrados nos eventos</div></div></div>
@@ -25,22 +25,7 @@
     <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="media_satisfacao" data-casas="1"><div class="kpi-icone ic-amarelo"><i class="bi bi-star"></i></div><div class="kpi-rotulo">Satisfação média</div><div class="kpi-valor">–</div><div class="kpi-sub" id="subAvaliacoes">&nbsp;</div></div></div>
 </div>
 
-<!-- Gráficos -->
-<div class="row g-3 mb-3">
-    <div class="col-xl-8">
-        <div class="bloco">
-            <div class="bloco-titulo"><h2><i class="bi bi-activity text-danger"></i> Evolução do engajamento</h2><small>últimos 21 dias</small></div>
-            <div class="grafico"><canvas id="gSerie"></canvas></div>
-        </div>
-    </div>
-    <div class="col-xl-4">
-        <div class="bloco">
-            <div class="bloco-titulo"><h2><i class="bi bi-pie-chart"></i> Interesse por categoria</h2></div>
-            <div class="grafico"><canvas id="gCategorias"></canvas></div>
-        </div>
-    </div>
-</div>
-
+<div class="titulo-secao">Inteligência</div>
 <!-- IA -->
 <div class="ia-card mb-3" id="ia">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -57,7 +42,24 @@
     </div>
     <div id="miroResultado" class="miro-resultado" hidden></div>
     <div id="iaConteudo">
-        <div class="ia-carregando"><div class="spinner-border spinner-border-sm"></div> Interpretando os indicadores calculados pela plataforma…</div>
+        <div class="ia-carregando"><div class="texto"><div class="spinner-border spinner-border-sm"></div> Interpretando os indicadores calculados pela plataforma…</div><div class="esqueleto"><span></span><span></span><span></span><span></span></div></div>
+    </div>
+</div>
+
+<div class="titulo-secao">Engajamento</div>
+<!-- Gráficos -->
+<div class="row g-3 mb-3">
+    <div class="col-xl-8">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-activity"></i> Evolução do engajamento</h2><small>últimos 21 dias</small></div>
+            <div class="grafico"><canvas id="gSerie"></canvas></div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-pie-chart"></i> Interesse por categoria</h2></div>
+            <div class="grafico"><canvas id="gCategorias"></canvas></div>
+        </div>
     </div>
 </div>
 
@@ -77,9 +79,10 @@
 </div>
 
 <!-- Validação de demanda -->
+<div class="titulo-secao">Programação</div>
 <div class="bloco mb-3" id="demanda">
     <div class="bloco-titulo">
-        <h2><i class="bi bi-clipboard-data"></i> Validação de demanda <small class="fw-normal">: ideias publicadas antes de investir</small></h2>
+        <h2><i class="bi bi-clipboard-data"></i> Validação de demanda <small class="fw-normal">· ideias publicadas antes de investir</small></h2>
         <a href="{% url 'dashboard:novo_evento' %}" class="btn btn-pulse btn-sm"><i class="bi bi-plus-lg"></i> Publicar ideia</a>
     </div>
     <div class="row g-3" id="validacao"></div>
