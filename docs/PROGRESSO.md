@@ -32,15 +32,14 @@ Entregar um fluxo funcional de descoberta de eventos, manifestação de interess
 - [ ] Decisão P-002 (autenticação nativa do Django) aguarda confirmação da equipe no `DECISOES.md`
 
 ## Pendências prioritárias
-- [ ] Validar o fluxo completo de ponta a ponta no navegador (login, simulações, check-in por QR, avaliação)
+- [x] Validar o fluxo completo no navegador: visitante (interesse, check-in por QR, avaliação) e administrador (login, simulação, painel, logout) — 18 de 18 verificações passaram
 - [x] Criar testes automatizados dos fluxos de persistência e participação (29 testes no total, `b5451cb`)
-- [ ] Validar o fluxo no navegador (login, simulações, QR Code, avaliação) — testes automatizados não cobrem a interface
 - [ ] Validar indicadores e integração com IA
 - [ ] Revisar usabilidade e responsividade
 - [ ] Atualizar `PLANEJAMENTO.md`, que ainda lista o login da administração como "Futura" e a persistência como "Futura"
 
 ## Próxima entrega sugerida
-Validar o fluxo completo no navegador (criar administrador, simulações, check-in por QR, avaliação) e decidir sobre o login de visitantes.
+Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/sqlite-auth` na `main`. Decidir sobre o login de visitantes e confirmar a decisão P-002.
 
 ## Registro de atualizações
 | Data | Alteração | Responsável | Evidência |
@@ -50,13 +49,15 @@ Validar o fluxo completo no navegador (criar administrador, simulações, check-
 | 2026-11-13 | Modelos `Evento` e `Interacao`, repositório via ORM e comando `carregar_eventos` | Equipe | `2f06f30`; verificação manual |
 | 2026-11-13 | Autenticação do administrador pelo `User` do Django, sessões no banco e testes de acesso | Equipe | `5345b35`; 13 testes passando |
 | 2026-11-13 | Testes de participação, persistência e leitura pelo painel | Equipe | `b5451cb`; 29 testes passando |
+| 2026-11-13 | Validação no navegador (Chrome, Playwright) dos fluxos de visitante e administrador | Equipe | 18 de 18 verificações; banco de desenvolvimento restaurado depois |
 
 ## Impedimentos e riscos
 - A base de demonstração é gerada na primeira execução (cerca de 16.600 interações simuladas). Gerar a base de novo ao reiniciar leva cerca de 0,7 segundo.
 - O carregamento do painel leva cerca de 0,65 segundo com essa base. Pode ficar lento se o painel for atualizado com frequência; otimizar se necessário.
 - O banco de desenvolvimento não tem administrador ainda, então o painel só pode ser acessado depois de `definir_admin`.
 - Não há registro de quem fez cada ação no painel.
-- Os 29 testes automatizados cobrem acesso, participação, persistência e leitura pelo painel. A interface (navegador) ainda não foi validada.
+- Os 29 testes automatizados cobrem acesso, participação, persistência e leitura pelo painel. A validação no navegador foi feita manualmente, com um roteiro que não está no repositório.
+- O navegador mostrou um aviso de `navigator.vibrate` bloqueado pelo navegador. Não afeta o fluxo.
 
 ## Orientações de manutenção
 - Marcar como concluído somente após verificar o comportamento.
