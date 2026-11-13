@@ -3,9 +3,8 @@ Configurações do Shopping Pulse (protótipo — Hackarun Palmas).
 
 Persistência: SQLite (decisão D-004 em docs/DECISOES.md).
 - O arquivo db.sqlite3 fica na raiz do projeto e está fora do Git.
-- A carga inicial de eventos continua vindo de /data e a camada de dados ainda está em memória
-  (apps/eventos/repositorio.py); a migração para o banco é a próxima etapa.
-- Sessões continuam em cookies assinados (SESSION_ENGINE abaixo).
+- Eventos e interações ficam no banco (apps/eventos/repositorio.py); /data/eventos.json é só a carga inicial.
+- Sessões ficam no banco (django.contrib.sessions), para que o logout invalide a sessão no servidor.
 """
 import os
 from pathlib import Path
@@ -18,7 +17,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-inseguro-troque-no-env")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
 
-# A SECRET_KEY assina os cookies de sessão (inclusive o login do admin) e os tokens de check-in.
+# A SECRET_KEY assina os tokens de check-in e o hash de sessão do administrador.
 # As chaves de exemplo são públicas no repositório: fora do modo de desenvolvimento, não sobe com elas.
 CHAVES_PUBLICAS = {"dev-inseguro-troque-no-env", "troque-esta-chave", ""}
 if not DEBUG and SECRET_KEY in CHAVES_PUBLICAS:
@@ -35,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.contenttypes",
     "django.contrib.auth",
+    "django.contrib.sessions",
     # Apps do projeto
     "apps.eventos",
     "apps.participacao",
@@ -78,7 +78,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_COOKIE_AGE = 12 * 3600  # o login do administrador vale por 12 horas
 MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
 LANGUAGE_CODE = "pt-br"
@@ -107,10 +107,7 @@ GEMINI_TEMPO_LIMITE = int(os.getenv("GEMINI_TEMPO_LIMITE", "35"))  # segundos, p
 # Vazio => usa o endereço acessado; se for localhost, troca pelo IP da rede automaticamente.
 URL_PUBLICA = os.getenv("URL_PUBLICA", "")
 
-# Administrador da área /painel/ (protótipo sem banco: um usuário, definido no .env).
-# Defina com: python manage.py definir_admin
-ADMIN_USUARIO = os.getenv("ADMIN_USUARIO", "")
-ADMIN_SENHA_HASH = os.getenv("ADMIN_SENHA_HASH", "")
+# Administrador da área /painel/: usuário do Django com is_staff (ver definir_admin).
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 

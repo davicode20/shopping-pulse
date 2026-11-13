@@ -1,44 +1,30 @@
 """
-Acesso à área administrativa (protótipo sem banco de dados).
+Acesso à área administrativa, pelo django.contrib.auth (decisão P-002).
 
-- Um único administrador, definido no .env: ADMIN_USUARIO e ADMIN_SENHA_HASH
-  (gerado com `python manage.py definir_admin`; a senha nunca fica em texto puro).
-- O login fica na sessão, que é um cookie ASSINADO com a SECRET_KEY. Por isso a chave
-  precisa ser secreta: com a chave pública, qualquer um forjaria o cookie de admin.
+- Administradores são usuários do Django com is_staff=True, criados com `python manage.py definir_admin`.
+- O login usa authenticate()/login(); a sessão fica no banco, então o logout invalida a sessão no servidor.
+- Visitantes não têm acesso ao painel: a área administrativa exige is_staff.
 - Limite de tentativas por IP contra força bruta.
-
-Quando o projeto ganhar banco de dados, basta trocar este módulo pelo django.contrib.auth:
-as views continuam usando o mesmo decorator @admin_requerido.
 """
-import time
 from functools import wraps
 from urllib.parse import urlencode
 
-from django.conf import settings
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate, login as entrar, logout as sair
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.crypto import constant_time_compare
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-CHAVE_SESSAO = "admin"
-DURACAO_SESSAO = 12 * 3600       # o login vale por 12 horas
 MAX_TENTATIVAS = 5               # erros seguidos por IP...
 BLOQUEIO = 5 * 60                # ...bloqueiam novas tentativas por 5 minutos
 
 
 def admin_logado(request):
-    dados = request.session.get(CHAVE_SESSAO)
-    if not isinstance(dados, dict) or not settings.ADMIN_USUARIO:
-        return False
-    valido = (constant_time_compare(str(dados.get("usuario", "")), settings.ADMIN_USUARIO)
-              and time.time() - dados.get("desde", 0) < DURACAO_SESSAO)
-    if not valido:
-        request.session.pop(CHAVE_SESSAO, None)
-    return valido
+    usuario = request.user
+    return bool(usuario.is_authenticated and usuario.is_staff and usuario.is_active)
 
 
 def _quer_json(request):
@@ -73,13 +59,17 @@ def _ip(request):
     return request.META.get("REMOTE_ADDR", "desconhecido")
 
 
+def _existe_administrador():
+    return get_user_model().objects.filter(is_staff=True, is_active=True).exists()
+
+
 def login(request):
     proximo = destino_seguro(request, request.POST.get("proximo") or request.GET.get("proximo"),
                              reverse("dashboard:painel"))
     if admin_logado(request):
         return redirect(proximo)
 
-    contexto = {"proximo": proximo, "configurado": bool(settings.ADMIN_USUARIO and settings.ADMIN_SENHA_HASH)}
+    contexto = {"proximo": proximo, "configurado": _existe_administrador()}
     chave_tentativas = f"login-falhas:{_ip(request)}"
 
     if request.method == "POST":
@@ -91,13 +81,11 @@ def login(request):
         elif not contexto["configurado"]:
             contexto["erro"] = "Acesso não configurado. Rode: python manage.py definir_admin"
         else:
-            # confere usuário e senha sempre (mesmo com usuário errado), para não revelar qual dos dois falhou
-            usuario_ok = constant_time_compare(usuario.lower(), settings.ADMIN_USUARIO.lower())
-            senha_ok = check_password(senha, settings.ADMIN_SENHA_HASH)
-            if usuario_ok and senha_ok:
+            # authenticate() confere usuário e senha no mesmo fluxo, sem revelar qual dos dois falhou
+            conta = authenticate(request, username=usuario, password=senha)
+            if conta is not None and conta.is_staff and conta.is_active:
                 cache.delete(chave_tentativas)
-                request.session.cycle_key()  # novo cookie a cada login
-                request.session[CHAVE_SESSAO] = {"usuario": settings.ADMIN_USUARIO, "desde": time.time()}
+                entrar(request, conta)  # troca a chave da sessão a cada login
                 return redirect(proximo)
             cache.set(chave_tentativas, falhas + 1, BLOQUEIO)
             contexto["erro"] = "Usuário ou senha incorretos."
@@ -107,7 +95,10 @@ def login(request):
 
 @require_POST
 def logout(request):
-    # remove só o login: o visitante anônimo (se for o mesmo navegador) continua com suas interações
-    request.session.pop(CHAVE_SESSAO, None)
-    request.session.cycle_key()
+    # Encerra a sessão do administrador no servidor. O logout do Django apaga a sessão inteira,
+    # então guardamos o identificador do visitante e o devolvemos: suas interações continuam vinculadas.
+    visitante = request.session.get("visitante_id")
+    sair(request)
+    if visitante:
+        request.session["visitante_id"] = visitante
     return redirect("dashboard:login")

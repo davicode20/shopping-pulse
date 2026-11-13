@@ -12,7 +12,7 @@
 
         {% if erro %}<div class="alert alert-danger alert-pulse py-2 small" role="alert"><i class="bi bi-exclamation-circle"></i> {{ erro }}</div>{% endif %}
         {% if not configurado %}
-        <div class="alert alert-warning alert-pulse py-2 small">Nenhum administrador configurado. No terminal, rode <code>python manage.py definir_admin</code> e reinicie o servidor.</div>
+        <div class="alert alert-warning alert-pulse py-2 small">Nenhum administrador configurado. No terminal, rode <code>python manage.py definir_admin</code>.</div>
         {% endif %}
 
         <form method="post" class="form-pulse" novalidate>
