@@ -1,10 +1,12 @@
 from django.urls import path
 
-from . import views
+from . import acesso, views
 
 app_name = "dashboard"
 
 urlpatterns = [
+    path("entrar/", acesso.login, name="login"),
+    path("sair/", acesso.logout, name="logout"),
     path("", views.painel, name="painel"),
     path("dados.json", views.dados, name="dados"),
     path("eventos/", views.eventos, name="eventos"),

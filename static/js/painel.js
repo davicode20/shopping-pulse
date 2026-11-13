@@ -147,6 +147,18 @@
     }
 
     // ---------- IA ----------
+    // Sessão do admin expirou (ou logout em outra aba): volta para o login e retorna aqui depois
+    function irParaLogin(urlLogin) {
+        location.href = (urlLogin || "/painel/entrar/") + "?proximo=" + encodeURIComponent(location.pathname);
+        return new Promise(() => {}); // interrompe quem chamou enquanto a página troca
+    }
+    async function buscarJson(url) {
+        const resposta = await fetch(url, { headers: { "X-Requested-With": "fetch" } });
+        const dados = await resposta.json();
+        if (resposta.status === 401) return irParaLogin(dados.login);
+        return dados;
+    }
+
     async function carregarIa(forcar) {
         const conteudo = document.getElementById("iaConteudo");
         const fonte = document.getElementById("iaFonte");
@@ -155,7 +167,7 @@
         fonte.textContent = "analisando…";
         conteudo.innerHTML = '<div class="ia-carregando"><div class="spinner-border spinner-border-sm"></div> Interpretando os indicadores calculados pela plataforma…</div>';
         try {
-            const r = await (await fetch(cfg.urlIa + (forcar ? "?forcar=1" : ""))).json();
+            const r = await buscarJson(cfg.urlIa + (forcar ? "?forcar=1" : ""));
             const a = r.analise;
             fonte.innerHTML = r.fonte === "gemini"
                 ? `<i class="bi bi-google"></i> Google Gemini · ${esc(r.modelo)}`
@@ -229,6 +241,7 @@
                 headers: { "X-CSRFToken": obterCsrfToken(), "X-Requested-With": "fetch" },
             });
             const r = await resposta.json();
+            if (resposta.status === 401) return irParaLogin(r.login);
             if (!r.ok) throw new Error(r.erro || "Falha ao exportar.");
             caixa.className = "miro-resultado ok";
             caixa.innerHTML = `<i class="bi bi-check-circle-fill"></i>
@@ -253,6 +266,6 @@
 
     setInterval(async () => {
         if (document.hidden) return;
-        try { renderTudo(await (await fetch(cfg.urlDados)).json(), false); } catch (e) { /* tenta de novo no próximo ciclo */ }
+        try { renderTudo(await buscarJson(cfg.urlDados), false); } catch (e) { /* tenta de novo no próximo ciclo */ }
     }, INTERVALO);
 })();

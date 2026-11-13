@@ -19,13 +19,18 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # se o .env ainda não existir
+python manage.py definir_admin   # usuário e senha do painel (a senha fica como hash no .env)
 python manage.py runserver 0.0.0.0:8000
 ```
+
+**Login do painel:** `/painel/` pede usuário e senha, definidos com `python manage.py definir_admin`. Rode o comando de novo para trocar. A área do visitante continua aberta.
+
+**Modo apresentação:** rode `python manage.py runserver 0.0.0.0:8000 --noreload`. Sem o `--noreload`, salvar qualquer arquivo do projeto reinicia o servidor e **apaga as interações feitas ao vivo** (os dados ficam em memória). Para expor a demo fora da rede local (ex.: ngrok), use `DJANGO_DEBUG=False` e uma `DJANGO_SECRET_KEY` própria: com `DEBUG=False`, o servidor se recusa a subir com a chave de exemplo.
 
 | Área | Endereço |
 |---|---|
 | Visitante (celular) | http://127.0.0.1:8000/ |
-| Painel administrativo | http://127.0.0.1:8000/painel/ |
+| Painel administrativo (com login) | http://127.0.0.1:8000/painel/ |
 | Análise da IA (JSON) | http://127.0.0.1:8000/inteligencia/analise/ |
 
 **Celular na mesma rede Wi-Fi:** acesse `http://IP-DO-PC:8000/`. O QR Code de check-in já troca `localhost` pelo IP da rede automaticamente. Se precisar, fixe o endereço com `URL_PUBLICA` no `.env`.
@@ -68,7 +73,7 @@ python manage.py runserver 0.0.0.0:8000
 8. **Exportar para o Miro** → abra o quadro: "a recomendação já vira o planejamento da equipe".
 9. Feche com o ciclo e a visão de SaaS.
 
-> Dica: antes de apresentar, clique em **Reiniciar dados** na barra lateral.
+> Dica: antes de apresentar, entre no painel, clique em **Reiniciar dados** na barra lateral e gere uma análise da IA.
 
 ## Decisões do protótipo
 - **Sem banco de dados.** Os eventos vêm de `data/eventos.json` e as interações ficam em memória (`apps/eventos/repositorio.py`). Ao reiniciar o servidor, os dados voltam ao estado inicial. As sessões usam cookies assinados, então não há `migrate`.
@@ -77,7 +82,7 @@ python manage.py runserver 0.0.0.0:8000
 - **IA com plano B:** se o Gemini não responder, as recomendações por regras usam os mesmos indicadores.
 - **Bibliotecas locais** em `static/vendor/` (Bootstrap, Icons, Chart.js): a demo não depende da internet do evento. Só a fonte Poppins vem do Google Fonts, com fallback para a fonte do sistema.
 - **Nome configurável:** altere `NOME_PROJETO` no `.env` (Circulaê, Nexora, Vibraê...).
-- **Sem login no painel.** Para o protótipo, isso é aceitável; em produção, usaríamos o `django.contrib.auth`.
+- **Login sem banco de dados.** Um administrador definido no `.env` (senha como hash PBKDF2), sessão em cookie assinado com expiração de 12 h, bloqueio após 5 tentativas erradas e "Gerar nova análise" limitado a uma chamada a cada 15 s (`apps/dashboard/acesso.py`). Com banco de dados, a troca para o `django.contrib.auth` mexe só nesse módulo, porque as views usam o decorator `@admin_requerido`.
 
 ## Estrutura
 ```

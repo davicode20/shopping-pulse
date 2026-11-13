@@ -366,7 +366,12 @@ a, button, label, .chip, .btn { touch-action: manipulation; }
 .sidebar nav a:hover, .sidebar nav button:hover { background: var(--pulse-escuro-2); color: #fff; }
 .sidebar nav a.ativo { background: var(--pulse-gradiente); color: #fff; box-shadow: 0 8px 20px rgba(255, 61, 127, .25); }
 .sidebar nav i { font-size: 1.1rem; }
-.sidebar .rodape { margin-top: auto; font-size: .75rem; color: #7d78a3; padding: 0 .6rem; }
+.usuario-admin { margin-top: auto; display: flex; align-items: center; gap: .6rem; padding: .7rem .6rem; border-top: 1px solid var(--pulse-escuro-2); margin-bottom: .8rem; font-size: .88rem; color: #e4e1f5; }
+.usuario-admin .avatar { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--pulse-gradiente); font-weight: 700; color: #fff; flex: none; }
+.usuario-admin button, .btn-sair-mobile { background: none; border: 0; color: #c8c4e0; font-size: 1.15rem; padding: .2rem .3rem; border-radius: 8px; }
+.usuario-admin button:hover { background: var(--pulse-escuro-2); color: #fff; }
+.btn-sair-mobile { font-size: 1.3rem; margin-left: .9rem; padding: 0; vertical-align: baseline; }
+.sidebar .rodape { font-size: .75rem; color: #7d78a3; padding: 0 .6rem; }
 .admin-main { flex: 1; min-width: 0; padding: 1.6rem 2rem 3rem; }
 .admin-topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
 .admin-topo h1 { font-size: 1.55rem; margin: 0; }
@@ -548,3 +553,13 @@ mark.num-suspeito { background: rgba(255, 184, 0, .3); color: #fff; padding: 0 .
     .swipe-card .descricao { -webkit-line-clamp: 2; }
     .swipe-card .corpo { padding: .8rem 1rem 1rem; }
 }
+
+/* ---------- Login do painel ---------- */
+.area-login { background: var(--pulse-escuro); min-height: 100vh; min-height: 100dvh; }
+.login-tela {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem;
+    background: radial-gradient(circle at 85% 10%, rgba(255, 61, 127, .35), transparent 45%),
+                radial-gradient(circle at 10% 90%, rgba(108, 43, 217, .45), transparent 50%);
+}
+.login-card { width: 100%; max-width: 400px; background: #fff; border-radius: 24px; padding: 2rem 1.8rem; box-shadow: 0 30px 70px rgba(0, 0, 0, .35); }
+.logo-escuro, .logo-escuro:hover { color: var(--pulse-escuro); }

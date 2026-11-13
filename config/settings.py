@@ -15,6 +15,17 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-inseguro-troque-no-env")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
+
+# A SECRET_KEY assina os cookies de sessão (inclusive o login do admin) e os tokens de check-in.
+# As chaves de exemplo são públicas no repositório: fora do modo de desenvolvimento, não sobe com elas.
+CHAVES_PUBLICAS = {"dev-inseguro-troque-no-env", "troque-esta-chave", ""}
+if not DEBUG and SECRET_KEY in CHAVES_PUBLICAS:
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "Defina DJANGO_SECRET_KEY no .env. Gere uma com: "
+        "python -c \"from django.core.management.utils import get_random_secret_key as g; print(g())\""
+    )
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if h.strip()]
 
 INSTALLED_APPS = [
@@ -85,6 +96,13 @@ GEMINI_TEMPO_LIMITE = int(os.getenv("GEMINI_TEMPO_LIMITE", "35"))  # segundos, p
 # Endereço público usado nos QR Codes (ex.: http://192.168.0.10:8000 ou uma URL do ngrok).
 # Vazio => usa o endereço acessado; se for localhost, troca pelo IP da rede automaticamente.
 URL_PUBLICA = os.getenv("URL_PUBLICA", "")
+
+# Administrador da área /painel/ (protótipo sem banco: um usuário, definido no .env).
+# Defina com: python manage.py definir_admin
+ADMIN_USUARIO = os.getenv("ADMIN_USUARIO", "")
+ADMIN_SENHA_HASH = os.getenv("ADMIN_SENHA_HASH", "")
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 
 # Miro: exporta as recomendações para o quadro da equipe. Sem token => download em CSV (plano B).
 MIRO_ACCESS_TOKEN = os.getenv("MIRO_ACCESS_TOKEN", "")

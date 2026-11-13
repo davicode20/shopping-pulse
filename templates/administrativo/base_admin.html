@@ -10,6 +10,7 @@
         <a href="{% url 'dashboard:painel' %}" aria-label="Painel"><i class="bi bi-grid-1x2"></i></a>
         <a href="{% url 'dashboard:eventos' %}" aria-label="Eventos"><i class="bi bi-calendar3"></i></a>
         <a href="{% url 'dashboard:novo_evento' %}" aria-label="Novo evento"><i class="bi bi-plus-circle"></i></a>
+        <form method="post" action="{% url 'dashboard:logout' %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn-sair-mobile" aria-label="Sair"><i class="bi bi-box-arrow-right"></i></button></form>
     </nav>
 </div>
 <div class="admin-layout">
@@ -30,6 +31,13 @@
                 <button type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reiniciar dados</button>
             </form>
         </nav>
+        <div class="usuario-admin">
+            <span class="avatar">{{ request.session.admin.usuario|first|upper }}</span>
+            <span class="flex-grow-1 text-truncate">{{ request.session.admin.usuario }}</span>
+            <form method="post" action="{% url 'dashboard:logout' %}">{% csrf_token %}
+                <button type="submit" title="Sair" aria-label="Sair"><i class="bi bi-box-arrow-right"></i></button>
+            </form>
+        </div>
         <div class="rodape">{{ SLOGAN_PROJETO }}<br>Protótipo · Hackarun Palmas</div>
     </aside>
 

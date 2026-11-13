@@ -12,27 +12,32 @@ from apps.eventos import simulacao
 from apps.inteligencia import miro
 from apps.participacao.checkin import url_checkin
 
+from .acesso import admin_requerido
 from .forms import EventoForm
 from .metricas import detalhe_evento, metricas_por_evento, payload_painel
 
 
+@admin_requerido
 def painel(request):
     return render(request, "administrativo/painel.html", {
         "dados": payload_painel(), "secao": "painel", "miro_configurado": miro.configurado(),
     })
 
 
+@admin_requerido
 def dados(request):
     """JSON consultado a cada poucos segundos pelo painel (atualização ao vivo)."""
     return JsonResponse(payload_painel(), json_dumps_params={"ensure_ascii": False})
 
 
+@admin_requerido
 def eventos(request):
     metricas = metricas_por_evento()
     lista = sorted(metricas.values(), key=lambda m: (m["evento"].get("status") != "proposta", m["evento"]["data"]))
     return render(request, "administrativo/eventos.html", {"metricas": lista, "secao": "eventos"})
 
 
+@admin_requerido
 def novo_evento(request):
     form = EventoForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -42,6 +47,7 @@ def novo_evento(request):
     return render(request, "administrativo/evento_form.html", {"form": form, "secao": "eventos"})
 
 
+@admin_requerido
 def evento(request, evento_id):
     detalhe = detalhe_evento(evento_id)
     if not detalhe:
@@ -54,6 +60,7 @@ def evento(request, evento_id):
     })
 
 
+@admin_requerido
 def qrcode_png(request, evento_id):
     if not repo.obter_evento(evento_id):
         raise Http404("Evento não encontrado")
@@ -63,6 +70,7 @@ def qrcode_png(request, evento_id):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
+@admin_requerido
 @require_POST
 def simular(request, evento_id):
     """Botões da demonstração: gera interações SIMULADAS (identificadas como tal)."""
@@ -81,6 +89,7 @@ def simular(request, evento_id):
     return redirect("dashboard:evento", evento_id=evento["id"])
 
 
+@admin_requerido
 @require_POST
 def reiniciar(request):
     repo.reiniciar()

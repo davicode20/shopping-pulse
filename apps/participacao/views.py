@@ -3,8 +3,10 @@ import uuid
 
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.dashboard.acesso import destino_seguro
 from apps.eventos import repositorio as repo
 
 from .checkin import token_valido
@@ -94,7 +96,7 @@ def perfil(request):
         request.session["faixa_etaria"] = ""
     if request.headers.get("x-requested-with") == "fetch":
         return JsonResponse({"ok": True})
-    return redirect(request.POST.get("proximo") or "eventos:inicio")
+    return redirect(destino_seguro(request, request.POST.get("proximo"), reverse("eventos:inicio")))
 
 
 def checkin(request, evento_id, token):
