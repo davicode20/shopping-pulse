@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import IntegrityError, transaction
 from django.test import Client, TestCase
@@ -160,3 +161,121 @@ class PainelLeDadosPersistidosTests(TestCase):
     def test_painel_responde_com_dados_persistidos(self):
         resposta = self.client.get(reverse("dashboard:dados"), HTTP_ACCEPT="application/json")
         self.assertEqual(resposta.status_code, 200)
+
+
+class ContaVisitanteTests(TestCase):
+    SENHA = "senha-forte-123"
+
+    def setUp(self):
+        cache.clear()
+        self.client = Client()
+
+    def cadastrar(self, usuario="visitante-novo", senha="senha-forte-123", **extra):
+        dados = {"username": usuario, "password1": senha, "password2": senha, **extra}
+        return self.client.post(reverse("participacao:cadastrar"), dados)
+
+    def test_cadastro_cria_conta_de_visitante_sem_acesso_ao_painel(self):
+        resposta = self.cadastrar()
+        self.assertEqual(resposta.status_code, 302)
+        conta = get_user_model().objects.get(username="visitante-novo")
+        self.assertFalse(conta.is_staff)
+        self.assertFalse(conta.is_superuser)
+        self.assertEqual(self.client.get(reverse("dashboard:painel")).status_code, 302)
+
+    def test_cadastro_ignora_tentativa_de_virar_administrador(self):
+        self.cadastrar(usuario="tentou-admin", is_staff="on", is_superuser="on")
+        conta = get_user_model().objects.get(username="tentou-admin")
+        self.assertFalse(conta.is_staff)
+        self.assertFalse(conta.is_superuser)
+
+    def test_senha_fraca_nao_cria_conta(self):
+        resposta = self.cadastrar(usuario="fraco", senha="123")
+        self.assertEqual(resposta.status_code, 400)
+        self.assertFalse(get_user_model().objects.filter(username="fraco").exists())
+
+    def test_login_e_logout_de_visitante(self):
+        get_user_model().objects.create_user("visitante-login", password=self.SENHA)
+        ok = self.client.post(reverse("participacao:entrar"), {"usuario": "visitante-login", "senha": self.SENHA})
+        self.assertEqual(ok.status_code, 302)
+        self.assertEqual(self.client.get(reverse("participacao:conta")).status_code, 200)
+        self.client.post(reverse("participacao:sair"))
+        self.assertFalse(self.client.get(reverse("participacao:conta")).context["request"].user.is_authenticated)
+
+    def test_senha_errada_de_visitante_recebe_erro(self):
+        get_user_model().objects.create_user("visitante-login", password=self.SENHA)
+        resposta = self.client.post(reverse("participacao:entrar"), {"usuario": "visitante-login", "senha": "errada"})
+        self.assertEqual(resposta.status_code, 401)
+
+    def test_identificador_anonimo_sobrevive_ao_login_e_ao_logout(self):
+        self.client.get("/descobrir/")
+        visitante = self.client.session.get("visitante_id")
+        self.assertIsNotNone(visitante)
+        self.cadastrar(usuario="visitante-mantem")
+        self.assertEqual(self.client.session.get("visitante_id"), visitante)
+        self.client.post(reverse("participacao:sair"))
+        self.assertEqual(self.client.session.get("visitante_id"), visitante)
+
+    def test_sair_por_get_nao_e_permitido(self):
+        self.assertEqual(self.client.get(reverse("participacao:sair")).status_code, 405)
+
+
+class VinculoInteracoesContaTests(TestCase):
+    SENHA = "senha-forte-123"
+
+    def setUp(self):
+        cache.clear()
+        repo._pronto = True
+        self.e1 = repo.adicionar_evento({"nome": "Evento um", "categoria": "musica", "data": "2027-07-01",
+                                         "horario": "19:00", "status": "confirmado"})
+        self.e2 = repo.adicionar_evento({"nome": "Evento dois", "categoria": "cultura", "data": "2027-07-02",
+                                         "horario": "19:00", "status": "confirmado"})
+        self.visitante = get_user_model().objects.create_user("visitante-vinculo", password=self.SENHA)
+        self.client = Client()
+
+    def interessar(self, evento):
+        self.client.post(reverse("participacao:interesse"), {"evento_id": evento["id"], "acao": "interesse"})
+
+    def anonimo(self):
+        self.client.get("/descobrir/")  # garante o identificador anônimo na sessão
+        return self.client.session["visitante_id"]
+
+    def login(self):
+        return self.client.post(reverse("participacao:entrar"), {"usuario": "visitante-vinculo", "senha": self.SENHA})
+
+    def test_interesses_anonimos_passam_para_a_conta_ao_entrar(self):
+        anon = self.anonimo()
+        self.interessar(self.e1)
+        self.login()
+        conta_id = f"conta-{self.visitante.pk}"
+        self.assertTrue(Interacao.objects.filter(visitante=conta_id, evento_id=self.e1["id"], tipo=repo.INTERESSE).exists())
+        self.assertFalse(Interacao.objects.filter(visitante=anon).exclude(tipo=repo.VISUALIZACAO).exists())
+
+    def test_conflito_mantem_o_registro_da_conta_sem_duplicar(self):
+        anon = self.anonimo()
+        Interacao.objects.create(evento_id=self.e2["id"], tipo=repo.INTERESSE,
+                                 visitante=f"conta-{self.visitante.pk}", momento=timezone.now())
+        self.interessar(self.e2)  # o anônimo também tinha interesse neste evento
+        self.login()
+        total = Interacao.objects.filter(evento_id=self.e2["id"], tipo=repo.INTERESSE,
+                                         visitante__in=[anon, f"conta-{self.visitante.pk}"]).count()
+        self.assertEqual(total, 1)
+
+    def test_depois_do_login_as_novas_acoes_vao_para_a_conta(self):
+        self.anonimo()
+        self.login()
+        self.interessar(self.e1)
+        self.assertTrue(Interacao.objects.filter(visitante=f"conta-{self.visitante.pk}",
+                                                 evento_id=self.e1["id"], tipo=repo.INTERESSE).exists())
+
+    def test_logout_volta_ao_anonimo_e_o_identificador_da_sessao_permanece(self):
+        anon = self.anonimo()
+        self.login()
+        self.client.post(reverse("participacao:sair"))
+        self.assertEqual(self.client.session.get("visitante_id"), anon)
+
+    def test_administrador_nao_move_interacoes(self):
+        admin = get_user_model().objects.create_user("admin-vinculo", password=self.SENHA, is_staff=True)
+        anon = self.anonimo()
+        self.interessar(self.e1)
+        self.client.post(reverse("dashboard:login"), {"usuario": admin.username, "senha": self.SENHA})
+        self.assertTrue(Interacao.objects.filter(visitante=anon, evento_id=self.e1["id"], tipo=repo.INTERESSE).exists())

@@ -91,6 +91,12 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Senhas das contas (visitantes e administradores): mínimo de 8 caracteres e sem senhas comuns.
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+]
+
 # Projeto
 DATA_DIR = BASE_DIR / "data"
 NOME_PROJETO = os.getenv("NOME_PROJETO", "Shopping Pulse")

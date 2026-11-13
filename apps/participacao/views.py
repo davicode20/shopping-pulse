@@ -13,9 +13,16 @@ from .checkin import token_valido
 
 
 def obter_visitante(request):
-    """Identifica o visitante de forma anônima pela sessão (cookie assinado)."""
+    """Identifica o visitante: "conta-<id>" se estiver logado como visitante, senão o id anônimo da sessão.
+
+    O id anônimo continua guardado na sessão, mesmo com login, para que o logout volte a ele.
+    Administradores não contam como visitantes: as interações feitas por eles não entram nas métricas.
+    """
     if "visitante_id" not in request.session:
         request.session["visitante_id"] = uuid.uuid4().hex[:12]
+    usuario = request.user
+    if usuario.is_authenticated and not usuario.is_staff:
+        return f"conta-{usuario.pk}"
     return request.session["visitante_id"]
 
 
