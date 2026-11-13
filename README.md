@@ -4,6 +4,8 @@
 
 Plataforma de engajamento e análise de experiências para shopping centers. O visitante usa uma área mobile (sem instalar app), e a administração conta com um painel de inteligência com indicadores ao vivo e recomendações geradas por IA.
 
+📄 **[Planejamento técnico inicial (1ª entrega)](docs/PLANEJAMENTO.md)**
+
 **Ciclo:** PLANEJAMENTO → ENGAJAMENTO → PARTICIPAÇÃO → AVALIAÇÃO → INTELIGÊNCIA → NOVO PLANEJAMENTO
 
 ## Stack
