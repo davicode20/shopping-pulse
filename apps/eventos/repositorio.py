@@ -1,20 +1,24 @@
 """
-Camada de dados do protótipo (sem banco de dados).
+Camada de dados do Shopping Pulse (SQLite via Django ORM, decisão D-004).
 
-- Eventos: carregados de data/eventos.json e mantidos em memória.
-- Interações (visualização, interesse, check-in, avaliação...): guardadas em memória.
-- Na primeira carga, uma base SIMULADA é gerada (apps/eventos/simulacao.py) para que o
+- Eventos: gravados na tabela Evento. Na primeira execução, são carregados de data/eventos.json.
+- Interações (visualização, interesse, check-in, avaliação...): gravadas na tabela Interacao.
+- Na primeira execução, uma base SIMULADA é gerada (apps/eventos/simulacao.py) para que o
   painel tenha histórico. Cada interação carrega a flag "simulado", e as interações feitas
   ao vivo na demonstração têm simulado=False.
 
-Tudo volta ao estado inicial ao reiniciar o servidor (ou pelo botão "Reiniciar demonstração").
-Se depois precisarmos persistir, basta trocar as funções deste módulo.
+As funções devolvem dicionários (mesmo formato de antes), para que views e painel não mudem.
+"Reiniciar demonstração" apaga tudo e volta aos eventos do JSON com a base simulada.
+Para atualizar os eventos a partir do JSON sem apagar nada: python manage.py carregar_eventos
 """
 import json
 import threading
-from datetime import date, datetime
+from datetime import date
 
 from django.conf import settings
+from django.utils import timezone
+
+from .models import Evento, Interacao
 
 CATEGORIAS = {
     "gastronomia": "Gastronomia",
@@ -78,31 +82,98 @@ PRESENCA = "presenca_provavel"  # "provavelmente vou comparecer"
 CHECKIN = "checkin"
 AVALIACAO = "avaliacao"
 
-_trava = threading.Lock()
-_eventos = None
-_interacoes = []  # {"tipo", "evento_id", "visitante", "dados", "momento", "simulado"}
+_CAMPOS_EVENTO = [
+    "nome", "descricao", "categoria", "data", "horario", "local",
+    "imagem", "informacoes", "status", "investimento_estimado",
+]
+
+_trava = threading.RLock()
+_pronto = False
 
 
-def _carregar():
-    global _eventos
-    if _eventos is None:
-        with _trava:
-            if _eventos is None:
-                with open(settings.DATA_DIR / "eventos.json", encoding="utf-8") as arquivo:
-                    eventos = json.load(arquivo)
-                _interacoes.clear()
-                from .simulacao import gerar_base_simulada
+# ---------- Conversões ----------
 
-                _interacoes.extend(gerar_base_simulada(eventos))
-                _eventos = eventos
-    return _eventos
+def _como_dict_evento(e):
+    return {
+        "id": e.id, "nome": e.nome, "descricao": e.descricao, "categoria": e.categoria,
+        "data": e.data.isoformat(), "horario": e.horario, "local": e.local, "imagem": e.imagem,
+        "informacoes": e.informacoes, "status": e.status,
+        "investimento_estimado": e.investimento_estimado,
+    }
+
+
+def _como_dict_interacao(i):
+    # O banco guarda com fuso; devolvemos a hora local sem fuso, como o restante do painel espera.
+    momento = timezone.localtime(i.momento).replace(tzinfo=None)
+    return {
+        "tipo": i.tipo, "evento_id": i.evento_id, "visitante": i.visitante,
+        "dados": i.dados, "momento": momento, "simulado": i.simulado,
+    }
+
+
+def _campos_evento(dados):
+    campos = {k: dados[k] for k in _CAMPOS_EVENTO if k in dados}
+    if "data" in campos and isinstance(campos["data"], str):
+        campos["data"] = date.fromisoformat(campos["data"])
+    return campos
+
+
+def _com_fuso(momento):
+    momento = momento or timezone.now()
+    return timezone.make_aware(momento) if timezone.is_naive(momento) else momento
+
+
+# ---------- Carga inicial e reinício ----------
+
+def carregar_json():
+    """Cria ou atualiza os eventos a partir de data/eventos.json (pelo id). Não apaga nada."""
+    with open(settings.DATA_DIR / "eventos.json", encoding="utf-8") as arquivo:
+        eventos = json.load(arquivo)
+    for dados in eventos:
+        Evento.objects.update_or_create(id=dados["id"], defaults=_campos_evento(dados))
+    return len(eventos)
+
+
+def _gravar_interacoes(lista):
+    # Só usa ORM direto (não as funções públicas), para não disparar _garantir de novo.
+    objetos = [
+        Interacao(
+            evento_id=i["evento_id"], tipo=i["tipo"], visitante=i["visitante"],
+            dados=i.get("dados") or {}, momento=_com_fuso(i.get("momento")),
+            simulado=i.get("simulado", True),
+        )
+        for i in lista
+    ]
+    # Uma interação por tipo e visitante: duplicatas da simulação são descartadas.
+    Interacao.objects.bulk_create(objetos, ignore_conflicts=True, batch_size=500)
+
+
+def _garantir():
+    """Na primeira chamada, cria os dados iniciais se o banco ainda não tiver nada."""
+    global _pronto
+    if _pronto:
+        return
+    with _trava:
+        if _pronto:
+            return
+        if not Evento.objects.exists():
+            carregar_json()
+        if not Interacao.objects.exists():
+            from .simulacao import gerar_base_simulada
+
+            eventos = [_como_dict_evento(e) for e in Evento.objects.all()]
+            _gravar_interacoes(gerar_base_simulada(eventos))
+        _pronto = True
 
 
 def reiniciar():
-    """Volta ao estado inicial (eventos do JSON + base simulada)."""
-    global _eventos
-    _eventos = None
-    _carregar()
+    """Volta ao estado inicial: eventos do JSON + base simulada. Apaga eventos criados e interações."""
+    global _pronto
+    with _trava:
+        Interacao.objects.all().delete()
+        Evento.objects.all().delete()
+        _pronto = False
+    _garantir()
 
 
 # ---------- Eventos ----------
@@ -124,62 +195,56 @@ def enriquecer(evento):
 
 
 def listar_eventos(categoria=None, status=None):
-    eventos = _carregar()
+    _garantir()
+    qs = Evento.objects.all()
     if categoria:
-        eventos = [e for e in eventos if e["categoria"] == categoria]
+        qs = qs.filter(categoria=categoria)
     if status:
         status = [status] if isinstance(status, str) else status
-        eventos = [e for e in eventos if e.get("status") in status]
-    return list(eventos)
+        qs = qs.filter(status__in=status)
+    return [_como_dict_evento(e) for e in qs]
 
 
 def obter_evento(evento_id):
+    _garantir()
     try:
         evento_id = int(evento_id)
     except (TypeError, ValueError):
         return None
-    return next((e for e in _carregar() if e["id"] == evento_id), None)
+    evento = Evento.objects.filter(pk=evento_id).first()
+    return _como_dict_evento(evento) if evento else None
 
 
 def adicionar_evento(dados):
-    eventos = _carregar()
+    _garantir()
     with _trava:
-        novo = {"imagem": "", **dados, "id": max((e["id"] for e in eventos), default=0) + 1}
-        eventos.append(novo)
-    return novo
+        evento = Evento.objects.create(**_campos_evento(dados))
+    return _como_dict_evento(evento)
 
 
 # ---------- Interações ----------
 
 def registrar_interacao(tipo, evento_id, visitante, dados=None, momento=None, simulado=False):
-    _carregar()
-    interacao = {
-        "tipo": tipo,
-        "evento_id": int(evento_id),
-        "visitante": visitante,
-        "dados": dados or {},
-        "momento": momento or datetime.now(),
-        "simulado": simulado,
-    }
-    with _trava:
-        _interacoes.append(interacao)
-    return interacao
+    _garantir()
+    campos = {"dados": dados or {}, "momento": _com_fuso(momento), "simulado": simulado}
+    if tipo == VISUALIZACAO:
+        interacao = Interacao.objects.create(
+            tipo=tipo, evento_id=int(evento_id), visitante=visitante, **campos)
+    else:
+        # Um registro por tipo e visitante: se já existir, vale o mais recente.
+        interacao, _ = Interacao.objects.update_or_create(
+            tipo=tipo, evento_id=int(evento_id), visitante=visitante, defaults=campos)
+    return _como_dict_interacao(interacao)
 
 
 def remover_interacao(tipo, evento_id, visitante):
-    _carregar()
-    with _trava:
-        _interacoes[:] = [
-            i for i in _interacoes
-            if not (i["tipo"] == tipo and i["evento_id"] == int(evento_id) and i["visitante"] == visitante)
-        ]
+    _garantir()
+    Interacao.objects.filter(tipo=tipo, evento_id=int(evento_id), visitante=visitante).delete()
 
 
 def existe_interacao(tipo, evento_id, visitante):
-    return any(
-        i["tipo"] == tipo and i["evento_id"] == int(evento_id) and i["visitante"] == visitante
-        for i in _carregar_interacoes()
-    )
+    _garantir()
+    return Interacao.objects.filter(tipo=tipo, evento_id=int(evento_id), visitante=visitante).exists()
 
 
 def registrar_unica(tipo, evento_id, visitante, dados=None):
@@ -189,18 +254,13 @@ def registrar_unica(tipo, evento_id, visitante, dados=None):
     return None
 
 
-def _carregar_interacoes():
-    _carregar()
-    return _interacoes
-
-
 def listar_interacoes(tipo=None, evento_id=None, visitante=None):
-    resultado = list(_carregar_interacoes())
+    _garantir()
+    qs = Interacao.objects.all()
     if tipo:
-        tipos = [tipo] if isinstance(tipo, str) else tipo
-        resultado = [i for i in resultado if i["tipo"] in tipos]
+        qs = qs.filter(tipo__in=[tipo] if isinstance(tipo, str) else tipo)
     if evento_id is not None:
-        resultado = [i for i in resultado if i["evento_id"] == int(evento_id)]
+        qs = qs.filter(evento_id=int(evento_id))
     if visitante is not None:
-        resultado = [i for i in resultado if i["visitante"] == visitante]
-    return resultado
+        qs = qs.filter(visitante=visitante)
+    return [_como_dict_interacao(i) for i in qs]
