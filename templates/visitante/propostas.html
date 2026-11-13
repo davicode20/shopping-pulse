@@ -1,0 +1,67 @@
+{% extends "visitante/base_visitante.html" %}
+{% load pulse %}
+
+{% block conteudo %}
+<section class="hero" style="padding-bottom:1.6rem">
+    <h1>🗳️ Ajude a decidir</h1>
+    <p>Estas ideias ainda não estão confirmadas. O shopping vai realizar as que tiverem mais interesse do público.</p>
+</section>
+
+{% include "visitante/_faixa.html" %}
+
+<section class="secao d-grid gap-3">
+    {% for evento in eventos %}
+    <article class="card-proposta">
+        <a href="{% url 'eventos:detalhe' evento.id %}" class="capa cat-{{ evento.categoria }} d-block text-white">
+            <i class="bi {{ evento.icone }} capa-icone"></i>
+            <span class="badge-cat"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
+            <h3>{{ evento.nome }}</h3>
+        </a>
+        <div class="p-3">
+            <p class="small text-2 mb-2">{{ evento.descricao|truncatechars:120 }}</p>
+            <div class="small mb-2"><i class="bi bi-calendar-event"></i> Previsto para {{ evento.data_obj|date:"d \d\e F" }} · {{ evento.local }}</div>
+            <div class="d-flex justify-content-between small mb-1">
+                <span><b data-total-interessados="{{ evento.id }}">{{ evento.total_interessados|num }}</b> interessados</span>
+                <span class="text-2">{% if forloop.first %}🔥 Mais votada{% endif %}</span>
+            </div>
+            <div class="termometro mb-3"><span style="width: {{ evento.total_interessados|porcentagem_de:1000 }}%"></span></div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-suave flex-fill js-voto {% if evento.interessado %}ativo{% endif %}" data-evento="{{ evento.id }}" data-acao="interesse">
+                    <i class="bi bi-heart{% if evento.interessado %}-fill{% endif %}"></i> Tenho interesse
+                </button>
+                <button class="btn flex-fill js-voto {% if evento.vou %}btn-pulse{% else %}btn-suave{% endif %}" data-evento="{{ evento.id }}" data-acao="presenca">
+                    <i class="bi bi-calendar-check"></i> Eu iria!
+                </button>
+            </div>
+        </div>
+    </article>
+    {% empty %}
+        <div class="vazio"><i class="bi bi-inbox"></i>Nenhuma proposta em votação agora.</div>
+    {% endfor %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll(".js-voto").forEach(btn => btn.addEventListener("click", async () => {
+    const evento = btn.dataset.evento;
+    const card = btn.closest(".card-proposta");
+    const [bI, bV] = card.querySelectorAll(".js-voto");
+    let r;
+    if (btn.dataset.acao === "interesse") {
+        const ativo = bI.classList.contains("ativo");
+        r = await enviar("{% url 'participacao:interesse' %}", { evento_id: evento, acao: ativo ? "remover" : "interesse" });
+        bI.classList.toggle("ativo", r.interessado);
+        bI.querySelector("i").className = "bi " + (r.interessado ? "bi-heart-fill" : "bi-heart");
+        if (!r.interessado) bV.className = bV.className.replace("btn-pulse", "btn-suave");
+        mostrarToast(r.interessado ? "💜 Voto registrado!" : "Voto removido");
+    } else {
+        r = await enviar("{% url 'participacao:presenca' %}", { evento_id: evento });
+        bV.classList.toggle("btn-pulse", r.vou); bV.classList.toggle("btn-suave", !r.vou);
+        if (r.vou) { bI.classList.add("ativo"); bI.querySelector("i").className = "bi bi-heart-fill"; mostrarToast("🎉 Anotado: você iria!"); }
+    }
+    card.querySelector("[data-total-interessados]").textContent = formatarNumero(r.total_interessados);
+    card.querySelector(".termometro span").style.width = Math.min(100, r.total_interessados / 10) + "%";
+}));
+</script>
+{% endblock %}

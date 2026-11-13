@@ -1,0 +1,70 @@
+{% extends "administrativo/base_admin.html" %}
+
+{% block titulo %}Novo evento · {{ NOME_PROJETO }}{% endblock %}
+
+{% block conteudo %}
+<div class="admin-topo">
+    <div><h1>Novo evento</h1><p>Publique uma ideia para validar a demanda, ou um evento já confirmado.</p></div>
+    <a href="{% url 'dashboard:eventos' %}" class="btn btn-suave"><i class="bi bi-arrow-left"></i> Voltar</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <form method="post" class="bloco form-pulse" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger alert-pulse">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="row g-3">
+                {% for campo in form %}
+                <div class="{% if campo.name in 'nome descricao informacoes' %}col-12{% else %}col-md-6{% endif %}">
+                    <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+                    {% for erro in campo.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <button class="btn btn-pulse mt-4 px-4"><i class="bi bi-send"></i> Publicar para os visitantes</button>
+        </form>
+    </div>
+    <div class="col-lg-5">
+        <div class="preview-card">
+            <div class="text-2 small fw-600 mb-2">PRÉ-VISUALIZAÇÃO NO CELULAR DO VISITANTE</div>
+            <div class="bg-white overflow-hidden" style="border-radius:22px;box-shadow:var(--sombra-forte);max-width:340px">
+                <div class="capa cat-gastronomia" id="pvCapa" style="height:170px">
+                    <i class="bi bi-cup-hot capa-icone" id="pvIcone"></i>
+                    <span class="badge-cat" id="pvCat">Gastronomia</span>
+                    <span class="badge-status status-proposta" id="pvStatus"><i class="bi bi-lightbulb"></i> Ideia em votação</span>
+                </div>
+                <div class="p-3">
+                    <h3 class="h5 mb-1" id="pvNome">Nome do evento</h3>
+                    <p class="small text-2 mb-2" id="pvDesc">A descrição aparece aqui.</p>
+                    <div class="meta"><span><i class="bi bi-geo-alt"></i> <span id="pvLocal">Local</span></span></div>
+                </div>
+            </div>
+            <div class="small text-2 mt-3" style="max-width:340px"><i class="bi bi-info-circle"></i> Depois de publicar, você vê em tempo real quantas pessoas visualizaram, demonstraram interesse e pretendem ir, além do QR Code de check-in.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_admin %}
+<script>
+const ICONES = { gastronomia: "bi-cup-hot", musica: "bi-music-note-beamed", tecnologia: "bi-controller", cultura: "bi-palette", esportes: "bi-trophy", entretenimento: "bi-film", infantil: "bi-balloon" };
+const f = (n) => document.getElementById("id_" + n);
+function atualizar() {
+    const cat = f("categoria");
+    document.getElementById("pvCapa").className = "capa cat-" + cat.value;
+    document.getElementById("pvIcone").className = "bi capa-icone " + ICONES[cat.value];
+    document.getElementById("pvCat").textContent = cat.options[cat.selectedIndex].text;
+    document.getElementById("pvNome").textContent = f("nome").value || "Nome do evento";
+    document.getElementById("pvDesc").textContent = f("descricao").value || "A descrição aparece aqui.";
+    document.getElementById("pvLocal").textContent = f("local").value || "Local";
+    const prop = f("status").value === "proposta";
+    const st = document.getElementById("pvStatus");
+    st.className = "badge-status " + (prop ? "status-proposta" : "status-confirmado");
+    st.innerHTML = prop ? '<i class="bi bi-lightbulb"></i> Ideia em votação' : "Confirmado";
+}
+document.querySelector("form").addEventListener("input", atualizar);
+atualizar();
+</script>
+{% endblock %}

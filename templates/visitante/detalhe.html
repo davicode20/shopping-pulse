@@ -1,0 +1,99 @@
+{% extends "visitante/base_visitante.html" %}
+{% load pulse %}
+
+{% block titulo %}{{ evento.nome }} · {{ NOME_PROJETO }}{% endblock %}
+{% block topbar %}{% endblock %}
+
+{% block conteudo %}
+<div class="capa detalhe-capa cat-{{ evento.categoria }}">
+    {% if evento.imagem %}<img src="{{ evento.imagem }}" alt="">{% endif %}
+    <i class="bi {{ evento.icone }} capa-icone"></i>
+    <a href="javascript:history.length > 1 ? history.back() : location.assign('{% url 'eventos:inicio' %}')" class="voltar" aria-label="Voltar"><i class="bi bi-arrow-left"></i></a>
+    <span class="badge-status status-{{ evento.status }}">{{ evento.status_nome }}</span>
+</div>
+
+<div class="detalhe-corpo">
+    <span class="badge-cat position-static mb-2" style="background:#efe7ff;color:var(--pulse-primaria)"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
+    <h1 class="h3 mb-1">{{ evento.nome }}</h1>
+    <p class="prova-social mb-3"><i class="bi bi-people-fill"></i> <b data-total-interessados="{{ evento.id }}">{{ evento.total_interessados|num }}</b> pessoas interessadas</p>
+
+    {% if evento.status == 'proposta' %}
+    <div class="aviso-proposta mb-3">
+        <strong><i class="bi bi-lightbulb"></i> Esta é uma ideia em votação.</strong><br>
+        O shopping só vai realizar este evento se houver interesse suficiente. Seu voto conta!
+    </div>
+    {% endif %}
+
+    <p>{{ evento.descricao }}</p>
+
+    <div class="info-grid mb-3">
+        <div class="info-item"><i class="bi bi-calendar-event"></i><div><small>Data</small><span>{{ evento.data_obj|date:"d \d\e F" }}</span></div></div>
+        <div class="info-item"><i class="bi bi-clock"></i><div><small>Horário</small><span>{{ evento.data_obj|date:"l" }}, {{ evento.horario }}</span></div></div>
+        <div class="info-item" style="grid-column: span 2"><i class="bi bi-geo-alt"></i><div><small>Onde</small><span>{{ evento.local }}</span></div></div>
+    </div>
+    {% if evento.informacoes %}<p class="small text-2"><i class="bi bi-info-circle"></i> {{ evento.informacoes }}</p>{% endif %}
+
+    {% if evento.status == 'realizado' or evento.fez_checkin %}
+        <div class="barra-acoes">
+            {% if evento.fez_checkin %}
+                <span class="btn btn-suave ativo"><i class="bi bi-patch-check-fill"></i> Check-in feito</span>
+                <a href="{% url 'participacao:avaliar' evento.id %}" class="btn btn-pulse"><i class="bi bi-star-fill"></i> {% if evento.avaliou %}Editar avaliação{% else %}Avaliar{% endif %}</a>
+            {% else %}
+                <span class="btn btn-suave" style="pointer-events:none">Este evento já aconteceu</span>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="barra-acoes">
+            <button class="btn btn-suave {% if evento.interessado %}ativo{% endif %}" id="btnInteresse" data-ativo="{{ evento.interessado|yesno:'1,0' }}">
+                <i class="bi {% if evento.interessado %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> <span>{% if evento.interessado %}Interessado{% else %}Tenho interesse{% endif %}</span>
+            </button>
+            <button class="btn {% if evento.vou %}btn-pulse{% else %}btn-suave{% endif %}" id="btnVou" data-ativo="{{ evento.vou|yesno:'1,0' }}">
+                <i class="bi bi-calendar-check"></i> <span>{% if evento.vou %}Eu vou!{% else %}Pretendo ir{% endif %}</span>
+            </button>
+        </div>
+        <p class="text-center small text-2 mt-3 mb-0"><i class="bi bi-qr-code-scan"></i> No dia, escaneie o QR Code no local para fazer check-in.</p>
+    {% endif %}
+
+    {% if relacionados %}
+    <h2 class="h6 mt-4 mb-3">Mais de {{ evento.categoria_nome }}</h2>
+    <div class="d-grid gap-3">
+        {% for evento in relacionados %}{% include "visitante/_card_evento.html" %}{% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const evento = "{{ evento.id }}";
+    const btnI = document.getElementById("btnInteresse");
+    const btnV = document.getElementById("btnVou");
+    if (!btnI) return;
+
+    function pintar(interessado, vou) {
+        btnI.dataset.ativo = interessado ? "1" : "0";
+        btnI.classList.toggle("ativo", interessado);
+        btnI.innerHTML = `<i class="bi ${interessado ? "bi-heart-fill" : "bi-heart"}"></i> <span>${interessado ? "Interessado" : "Tenho interesse"}</span>`;
+        btnV.dataset.ativo = vou ? "1" : "0";
+        btnV.className = "btn " + (vou ? "btn-pulse" : "btn-suave");
+        btnV.innerHTML = `<i class="bi bi-calendar-check"></i> <span>${vou ? "Eu vou!" : "Pretendo ir"}</span>`;
+    }
+    function total(n) { document.querySelectorAll(`[data-total-interessados="${evento}"]`).forEach(el => el.textContent = formatarNumero(n)); }
+
+    btnI.addEventListener("click", async () => {
+        const ativo = btnI.dataset.ativo === "1";
+        const r = await enviar("{% url 'participacao:interesse' %}", { evento_id: evento, acao: ativo ? "remover" : "interesse" });
+        pintar(r.interessado, ativo ? false : btnV.dataset.ativo === "1");
+        total(r.total_interessados);
+        mostrarToast(r.interessado ? "💜 Interesse registrado!" : "Interesse removido");
+    });
+    btnV.addEventListener("click", async () => {
+        const r = await enviar("{% url 'participacao:presenca' %}", { evento_id: evento });
+        pintar(r.vou || btnI.dataset.ativo === "1", r.vou);
+        total(r.total_interessados);
+        if (r.vou) { mostrarToast("🎉 Te esperamos lá!"); confete(40); }
+    });
+})();
+</script>
+{% endblock %}

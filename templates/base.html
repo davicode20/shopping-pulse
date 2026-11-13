@@ -1,0 +1,27 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#14112b">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block titulo %}{{ NOME_PROJETO }}{% endblock %}</title>
+
+    <!-- Bibliotecas servidas localmente (a demonstração não depende da internet) -->
+    <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%236c2bd9'/><path d='M15 55h18l8-22 14 40 9-28 6 10h15' stroke='white' stroke-width='9' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block corpo %}{% endblock %}
+
+    <div class="toast-pulse" id="toast"></div>
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

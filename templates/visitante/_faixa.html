@@ -1,0 +1,14 @@
+{% if perguntar_faixa %}
+<div class="card-faixa" data-url="{% url 'participacao:perfil' %}">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+            <strong class="d-block">Conte um pouco sobre você 👋</strong>
+            <small class="text-2">Qual sua faixa etária? É anônimo e ajuda o shopping a planejar eventos para você.</small>
+        </div>
+    </div>
+    <div class="chips">
+        {% for chave, nome in faixas.items %}<button class="chip" data-faixa="{{ chave }}">{{ nome }}</button>{% endfor %}
+        <button class="chip text-2" data-faixa="pular">Prefiro não dizer</button>
+    </div>
+</div>
+{% endif %}

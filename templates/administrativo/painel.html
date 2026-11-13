@@ -1,0 +1,105 @@
+{% extends "administrativo/base_admin.html" %}
+{% load static %}
+
+{% block titulo %}Painel · {{ NOME_PROJETO }}{% endblock %}
+
+{% block conteudo %}
+<div class="admin-topo">
+    <div>
+        <h1>Painel de inteligência</h1>
+        <p>O que os visitantes querem, como participam e o que acharam.</p>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="selo-simulado" title="Base histórica gerada para a demonstração. As interações feitas agora entram em tempo real."><i class="bi bi-database"></i> Base simulada + <b id="kpiReais">0</b>&nbsp;interações reais</span>
+        <span class="ao-vivo">Ao vivo · <span id="atualizadoEm">--:--</span></span>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="total_eventos"><div class="kpi-icone ic-roxo"><i class="bi bi-calendar3"></i></div><div class="kpi-rotulo">Eventos</div><div class="kpi-valor">–</div><div class="kpi-sub" id="subEventos">&nbsp;</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="visitantes_engajados"><div class="kpi-icone ic-azul"><i class="bi bi-people"></i></div><div class="kpi-rotulo">Visitantes engajados</div><div class="kpi-valor">–</div><div class="kpi-sub">interagiram na plataforma</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="total_interesses"><div class="kpi-icone ic-rosa"><i class="bi bi-heart"></i></div><div class="kpi-rotulo">Interesses</div><div class="kpi-valor">–</div><div class="kpi-sub">demonstrados nos eventos</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="total_checkins"><div class="kpi-icone ic-verde"><i class="bi bi-qr-code-scan"></i></div><div class="kpi-rotulo">Check-ins</div><div class="kpi-valor">–</div><div class="kpi-sub">presenças confirmadas</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="taxa_comparecimento" data-sufixo="%" data-casas="1"><div class="kpi-icone ic-laranja"><i class="bi bi-graph-up-arrow"></i></div><div class="kpi-rotulo">Comparecimento</div><div class="kpi-valor">–</div><div class="kpi-sub">check-ins ÷ interessados</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="kpi" data-kpi="media_satisfacao" data-casas="1"><div class="kpi-icone ic-amarelo"><i class="bi bi-star"></i></div><div class="kpi-rotulo">Satisfação média</div><div class="kpi-valor">–</div><div class="kpi-sub" id="subAvaliacoes">&nbsp;</div></div></div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-3 mb-3">
+    <div class="col-xl-8">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-activity text-danger"></i> Evolução do engajamento</h2><small>últimos 21 dias</small></div>
+            <div class="grafico"><canvas id="gSerie"></canvas></div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-pie-chart"></i> Interesse por categoria</h2></div>
+            <div class="grafico"><canvas id="gCategorias"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- IA -->
+<div class="ia-card mb-3" id="ia">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2><i class="bi bi-stars"></i> Recomendações da inteligência artificial</h2>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="ia-fonte" id="iaFonte">analisando…</span>
+            <button class="btn btn-ia" id="btnIa"><i class="bi bi-arrow-repeat"></i> Gerar nova análise</button>
+        </div>
+    </div>
+    <div id="iaConteudo">
+        <div class="ia-carregando"><div class="spinner-border spinner-border-sm"></div> Interpretando os indicadores calculados pela plataforma…</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-xl-8">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-bar-chart"></i> Eventos com maior interesse</h2><small>interessados × check-ins</small></div>
+            <div class="grafico"><canvas id="gTop"></canvas></div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-broadcast"></i> Atividade recente</h2></div>
+            <ul class="feed" id="feed"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Validação de demanda -->
+<div class="bloco mb-3" id="demanda">
+    <div class="bloco-titulo">
+        <h2><i class="bi bi-clipboard-data"></i> Validação de demanda <small class="fw-normal">: ideias publicadas antes de investir</small></h2>
+        <a href="{% url 'dashboard:novo_evento' %}" class="btn btn-pulse btn-sm"><i class="bi bi-plus-lg"></i> Publicar ideia</a>
+    </div>
+    <div class="row g-3" id="validacao"></div>
+</div>
+
+<!-- Tabela -->
+<div class="bloco">
+    <div class="bloco-titulo"><h2><i class="bi bi-table"></i> Desempenho por evento</h2><a href="{% url 'dashboard:eventos' %}" class="small">Gerenciar eventos</a></div>
+    <div class="table-responsive">
+        <table class="table tabela">
+            <thead><tr><th>Evento</th><th>Status</th><th class="text-end">Interessados</th><th>Aprovação</th><th class="text-end">Check-ins</th><th class="text-end">Comparec.</th><th class="text-end">Satisfação</th></tr></thead>
+            <tbody id="tabela"></tbody>
+        </table>
+    </div>
+</div>
+
+{{ dados|json_script:"dados-painel" }}
+{% endblock %}
+
+{% block scripts_admin %}
+<script>
+    window.PAINEL = {
+        urlDados: "{% url 'dashboard:dados' %}",
+        urlIa: "{% url 'inteligencia:analise' %}",
+        urlEvento: "{% url 'dashboard:evento' 0 %}",
+    };
+</script>
+<script src="{% static 'js/painel.js' %}"></script>
+{% endblock %}

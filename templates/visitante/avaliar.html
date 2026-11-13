@@ -1,0 +1,72 @@
+{% extends "visitante/base_visitante.html" %}
+
+{% block titulo %}Avaliar · {{ evento.nome }}{% endblock %}
+
+{% block conteudo %}
+{% if enviado %}
+<div class="tela-centro">
+    <div class="selo-checkin" style="background:linear-gradient(135deg,#6c2bd9,#ff3d7f);box-shadow:0 0 0 14px rgba(108,43,217,.12)"><i class="bi bi-heart-fill"></i></div>
+    <h1 class="h4">Obrigado pela avaliação!</h1>
+    <p class="text-2">Sua opinião vai direto para a equipe do shopping e ajuda a melhorar os próximos eventos.</p>
+    <a href="{% url 'eventos:descobrir' %}" class="btn btn-pulse mt-2">Descobrir mais experiências</a>
+</div>
+{% elif sem_checkin %}
+<div class="tela-centro">
+    <div class="selo-checkin erro" style="background:linear-gradient(135deg,#ffb800,#ff8a00)"><i class="bi bi-qr-code-scan"></i></div>
+    <h1 class="h4">Faça o check-in primeiro</h1>
+    <p class="text-2">A avaliação fica disponível para quem participou do evento. Escaneie o QR Code no local.</p>
+    <a href="{% url 'eventos:detalhe' evento.id %}" class="btn btn-suave mt-2">Voltar ao evento</a>
+</div>
+{% else %}
+<div class="secao">
+    <small class="text-uppercase fw-600 text-2" style="letter-spacing:.12em">Avaliação rápida</small>
+    <h1 class="h4 mb-3">{{ evento.nome }}</h1>
+    {% if erro %}<div class="alert alert-danger alert-pulse">{{ erro }}</div>{% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card-form text-center">
+            <h3>Como foi sua experiência?</h3>
+            <div class="estrelas">
+                {% for n in "54321" %}
+                <input type="radio" name="nota" id="nota{{ n }}" value="{{ n }}" required>
+                <label for="nota{{ n }}" title="{{ n }} estrela{{ n|pluralize }}"><i class="bi bi-star-fill"></i></label>
+                {% endfor %}
+            </div>
+            <small class="text-2" id="notaTexto">Toque nas estrelas</small>
+        </div>
+
+        <div class="card-form">
+            <h3>Participaria novamente?</h3>
+            <div class="opcoes-novamente">
+                <label><input type="radio" name="novamente" value="sim"> 😍 Sim</label>
+                <label><input type="radio" name="novamente" value="talvez"> 🤔 Talvez</label>
+                <label><input type="radio" name="novamente" value="nao"> 😕 Não</label>
+            </div>
+        </div>
+
+        <div class="card-form">
+            <h3>O que poderia melhorar? <small class="text-2 fw-normal">(opcional)</small></h3>
+            <div class="chips flex-wrap mb-3">
+                {% for chave, nome in melhorias.items %}
+                <label class="chip"><input type="checkbox" name="melhorias" value="{{ chave }}"> {{ nome }}</label>
+                {% endfor %}
+            </div>
+            <textarea name="comentario" class="form-control" rows="2" maxlength="280" placeholder="Quer deixar um comentário?" style="border-radius:12px"></textarea>
+        </div>
+
+        <button class="btn btn-pulse w-100 py-3 mb-3"><i class="bi bi-send-fill"></i> Enviar avaliação</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const textos = { 1: "Não gostei 😞", 2: "Poderia ser melhor 😐", 3: "Foi ok 🙂", 4: "Gostei muito! 😄", 5: "Incrível! 🤩" };
+document.querySelectorAll('input[name="nota"]').forEach(i => i.addEventListener("change", () => {
+    document.getElementById("notaTexto").textContent = textos[i.value];
+}));
+{% if enviado %}confete(60);{% endif %}
+</script>
+{% endblock %}

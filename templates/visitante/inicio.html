@@ -1,0 +1,76 @@
+{% extends "visitante/base_visitante.html" %}
+{% load pulse %}
+
+{% block conteudo %}
+<section class="hero">
+    <small class="text-uppercase fw-600" style="letter-spacing:.12em;opacity:.7">Programação do shopping</small>
+    <h1>O que você quer <span class="destaque">viver</span> no shopping?</h1>
+    <p>{{ SLOGAN_PROJETO }} Diga do que gosta e ajude a montar a próxima programação.</p>
+</section>
+
+<a class="cta-descobrir" href="{% url 'eventos:descobrir' %}">
+    <span class="cta-icone"><i class="bi bi-fire"></i></span>
+    <span class="flex-grow-1">
+        <strong>Descobrir experiências</strong>
+        <small>Deslize os cartões: 💚 quero ir · ✖ não curti</small>
+    </span>
+    <i class="bi bi-chevron-right text-2"></i>
+</a>
+
+{% include "visitante/_faixa.html" %}
+
+{% if recomendados %}
+<section class="secao">
+    <div class="secao-titulo">
+        <h2>{% if personalizado %}✨ Para você{% else %}🔥 Em alta{% endif %}</h2>
+        <a href="{% url 'eventos:agenda' %}">Minha agenda</a>
+    </div>
+    <div class="carrossel">
+        {% for evento in recomendados %}
+        <a class="card-reco" href="{% url 'eventos:detalhe' evento.id %}">
+            <div class="capa cat-{{ evento.categoria }}">
+                <i class="bi {{ evento.icone }} capa-icone"></i>
+                <span class="badge-cat"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
+            </div>
+            <div class="p-3">
+                <div class="motivo"><i class="bi bi-stars"></i> {{ evento.motivo }}</div>
+                <strong class="d-block text-truncate">{{ evento.nome }}</strong>
+                <small class="text-2">{{ evento.data_obj|date:"d \d\e F" }} · {{ evento.horario }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if total_propostas and not categoria_atual %}
+<section class="secao">
+    <a href="{% url 'eventos:propostas' %}" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:#fff8e6;border:1px solid #ffe3a3;border-radius:18px;color:inherit">
+        <span style="font-size:1.8rem">🗳️</span>
+        <span class="flex-grow-1">
+            <strong class="d-block">Ajude a decidir!</strong>
+            <small class="text-2">{{ total_propostas }} ideia{{ total_propostas|pluralize }} de evento esperando seu voto antes de acontecer.</small>
+        </span>
+        <i class="bi bi-chevron-right text-2"></i>
+    </a>
+</section>
+{% endif %}
+
+<section class="secao">
+    <div class="secao-titulo"><h2>Próximos eventos</h2></div>
+    <div class="chips mb-3">
+        <a href="{% url 'eventos:inicio' %}" class="chip {% if not categoria_atual %}ativo{% endif %}">Todos</a>
+        {% for chave, cat in categorias.items %}
+            <a href="?categoria={{ chave }}" class="chip {% if categoria_atual == chave %}ativo{% endif %}"><i class="bi {{ cat.icone }}"></i> {{ cat.nome }}</a>
+        {% endfor %}
+    </div>
+    <div class="d-grid gap-3">
+        {% for evento in eventos %}
+            {% include "visitante/_card_evento.html" %}
+        {% empty %}
+            <div class="vazio"><i class="bi bi-calendar-x"></i>Nenhum evento nesta categoria por enquanto.<br>
+                <small>Que tal votar nas <a href="{% url 'eventos:propostas' %}">propostas</a>?</small></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

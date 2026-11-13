@@ -1,0 +1,126 @@
+{% extends "administrativo/base_admin.html" %}
+{% load pulse %}
+
+{% block titulo %}{{ evento.nome }} · {{ NOME_PROJETO }}{% endblock %}
+
+{% block conteudo %}
+<div class="mb-3"><a href="{% url 'dashboard:eventos' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Eventos</a></div>
+
+<div class="capa evento-header cat-{{ evento.categoria }} mb-3">
+    <i class="bi {{ evento.icone }} capa-icone" style="font-size:11rem"></i>
+    <div style="position:relative;z-index:1" class="d-flex gap-2">
+        <span class="badge-cat position-static"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
+        <span class="badge-status status-{{ evento.status }}" style="position:static">{{ evento.status_nome }}</span>
+    </div>
+    <h1>{{ evento.nome }}</h1>
+    <div class="meta-h">
+        <span><i class="bi bi-calendar-event"></i> {{ evento.data_obj|date:"d \d\e F \d\e Y" }} · {{ evento.horario }}</span>
+        <span><i class="bi bi-geo-alt"></i> {{ evento.local }}</span>
+        {% if m.investimento %}<span><i class="bi bi-cash-coin"></i> Investimento estimado: {{ m.investimento|brl }}</span>{% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-rosa"><i class="bi bi-heart"></i></div><div class="kpi-rotulo">Interessados</div><div class="kpi-valor">{{ m.interessados|num }}</div><div class="kpi-sub">{{ m.aprovacao|num:1 }}% de aprovação nos cartões</div></div></div>
+    {% if evento.status == 'realizado' or m.checkins %}
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-verde"><i class="bi bi-qr-code-scan"></i></div><div class="kpi-rotulo">Check-ins</div><div class="kpi-valor">{{ m.checkins|num }}</div><div class="kpi-sub">{% if m.comparecimento is not None %}{{ m.comparecimento|num:1 }}% dos interessados{% endif %}</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-amarelo"><i class="bi bi-star"></i></div><div class="kpi-rotulo">Satisfação</div><div class="kpi-valor {% if m.nota_media and m.nota_media < 3.8 %}text-danger{% endif %}">{{ m.nota_media|num:1 }}</div><div class="kpi-sub">{{ m.avaliacoes|num }} avaliações</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-roxo"><i class="bi bi-arrow-repeat"></i></div><div class="kpi-rotulo">Participariam de novo</div><div class="kpi-valor">{% if m.novamente_pct is not None %}{{ m.novamente_pct|num:0 }}%{% else %}—{% endif %}</div><div class="kpi-sub">responderam "sim"</div></div></div>
+    {% else %}
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-verde"><i class="bi bi-calendar-check"></i></div><div class="kpi-rotulo">Provavelmente vão</div><div class="kpi-valor">{{ m.presenca_provavel|num }}</div><div class="kpi-sub">público estimado</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-azul"><i class="bi bi-eye"></i></div><div class="kpi-rotulo">Visualizações</div><div class="kpi-valor">{{ m.visualizacoes|num }}</div><div class="kpi-sub">visitantes únicos</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi"><div class="kpi-icone ic-laranja"><i class="bi bi-cash-coin"></i></div><div class="kpi-rotulo">Custo por interessado</div><div class="kpi-valor" style="font-size:1.5rem">{{ m.custo_por_interessado|brl }}</div><div class="kpi-sub">investimento ÷ interessados</div></div></div>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-xl-5">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-funnel"></i> Funil de participação</h2></div>
+            {% with base=m.funil.0.valor %}
+            {% for etapa in m.funil %}
+            <div class="funil-etapa">
+                <div class="topo"><span>{{ etapa.etapa }}</span><b>{{ etapa.valor|num }}</b></div>
+                <div class="barra"><span style="width: {{ etapa.valor|porcentagem_de:base }}%">{{ etapa.valor|porcentagem_de:base|floatformat:0 }}%</span></div>
+            </div>
+            {% endfor %}
+            {% endwith %}
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-people"></i> Faixa etária dos interessados</h2></div>
+            <div class="grafico-sm"><canvas id="gFaixas"></canvas></div>
+            {% if evento.status == 'proposta' %}<small class="text-2 d-block mt-2"><i class="bi bi-info-circle"></i> Informada de forma anônima e opcional pelo visitante.</small>{% endif %}
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="bloco qr-box">
+            <div class="bloco-titulo justify-content-center"><h2><i class="bi bi-qr-code"></i> Check-in no local</h2></div>
+            <img src="{% url 'dashboard:qrcode' evento.id %}" alt="QR Code de check-in">
+            <p class="small text-2 mt-2 mb-1">Imprima ou projete no local do evento. O visitante aponta a câmera e confirma a presença.</p>
+            <a href="{{ link_checkin }}" target="_blank" class="btn btn-suave btn-sm mt-1"><i class="bi bi-box-arrow-up-right"></i> Abrir link de check-in</a>
+            <div class="qr-link mt-2">{{ link_checkin }}</div>
+        </div>
+    </div>
+</div>
+
+{% if m.avaliacoes %}
+<div class="row g-3 mb-3">
+    <div class="col-lg-4"><div class="bloco"><div class="bloco-titulo"><h2><i class="bi bi-star"></i> Distribuição das notas</h2></div><div class="grafico-sm"><canvas id="gNotas"></canvas></div></div></div>
+    <div class="col-lg-4"><div class="bloco"><div class="bloco-titulo"><h2><i class="bi bi-tools"></i> O que melhorar</h2></div><div class="grafico-sm"><canvas id="gMelhorias"></canvas></div></div></div>
+    <div class="col-lg-4">
+        <div class="bloco">
+            <div class="bloco-titulo"><h2><i class="bi bi-chat-quote"></i> Comentários</h2></div>
+            {% for c in m.comentarios %}
+            <div class="comentario">"{{ c.texto }}"<br><small><i class="bi bi-star-fill text-warning"></i> {{ c.nota }} · {{ c.momento|date:"d/m H:i" }}{% if c.ao_vivo %} <span class="tag-vivo">AO VIVO</span>{% endif %}</small></div>
+            {% empty %}<p class="text-2 small">Sem comentários ainda.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="bloco" style="background:#fffbef;border:1px dashed #ffd36e">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <strong><i class="bi bi-magic"></i> Ferramentas da demonstração</strong><br>
+            <small class="text-2">Geram interações <b>simuladas</b> (identificadas como tal) para mostrar o ciclo completo durante a apresentação.</small>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <form method="post" action="{% url 'dashboard:simular' evento.id %}">{% csrf_token %}<input type="hidden" name="tipo" value="engajamento">
+                <button class="btn btn-suave btn-sm"><i class="bi bi-people"></i> Simular +150 visitantes</button></form>
+            <form method="post" action="{% url 'dashboard:simular' evento.id %}">{% csrf_token %}<input type="hidden" name="tipo" value="realizacao">
+                <button class="btn btn-suave btn-sm"><i class="bi bi-calendar-check"></i> Simular realização do evento</button></form>
+            <a href="{% url 'eventos:detalhe' evento.id %}" target="_blank" class="btn btn-suave btn-sm"><i class="bi bi-phone"></i> Ver como visitante</a>
+        </div>
+    </div>
+</div>
+
+{{ m.graficos|json_script:"graficos" }}
+{% endblock %}
+
+{% block scripts_admin %}
+<script>
+const g = JSON.parse(document.getElementById("graficos").textContent);
+const semGrade = { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: "#f0eef6" }, border: { display: false }, ticks: { precision: 0 } } };
+
+new Chart(document.getElementById("gFaixas"), {
+    type: "bar",
+    data: { labels: g.faixas.labels, datasets: [{ label: "Interessados", data: g.faixas.valores, backgroundColor: ["#22c3d6", "#ff3d7f", "#6c2bd9", "#f2a900", "#13b47e"], borderRadius: 8 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: semGrade },
+});
+if (document.getElementById("gNotas")) {
+    new Chart(document.getElementById("gNotas"), {
+        type: "bar",
+        data: { labels: g.notas.labels.map(n => n + "★"), datasets: [{ label: "Avaliações", data: g.notas.valores, backgroundColor: ["#ef3b55", "#ff8a00", "#ffc83d", "#7ad67a", "#13b47e"], borderRadius: 8 }] },
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: semGrade },
+    });
+    new Chart(document.getElementById("gMelhorias"), {
+        type: "bar",
+        data: { labels: g.melhorias.labels, datasets: [{ label: "Citações", data: g.melhorias.valores, backgroundColor: "#6c2bd9", borderRadius: 8 }] },
+        options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false } },
+                   scales: { x: { beginAtZero: true, grid: { color: "#f0eef6" }, ticks: { precision: 0 } }, y: { grid: { display: false } } } },
+    });
+}
+</script>
+{% endblock %}

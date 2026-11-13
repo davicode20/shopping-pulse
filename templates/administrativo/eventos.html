@@ -1,0 +1,36 @@
+{% extends "administrativo/base_admin.html" %}
+{% load pulse %}
+
+{% block titulo %}Eventos · {{ NOME_PROJETO }}{% endblock %}
+
+{% block conteudo %}
+<div class="admin-topo">
+    <div><h1>Eventos</h1><p>Ideias em validação, eventos confirmados e já realizados.</p></div>
+    <a href="{% url 'dashboard:novo_evento' %}" class="btn btn-pulse"><i class="bi bi-plus-lg"></i> Novo evento</a>
+</div>
+
+<div class="bloco">
+    <div class="table-responsive">
+        <table class="table tabela">
+            <thead><tr><th>Evento</th><th>Data</th><th>Status</th><th class="text-end">Visualizações</th><th class="text-end">Interessados</th><th class="text-end">Vão / Check-ins</th><th class="text-end">Satisfação</th><th class="text-end">Investimento</th></tr></thead>
+            <tbody>
+            {% for m in metricas %}{% with e=m.evento %}
+                <tr class="clicavel" onclick="location.href='{% url 'dashboard:evento' e.id %}'">
+                    <td><div class="d-flex align-items-center gap-2">
+                        <span class="mini-capa cat-{{ e.categoria }}"><i class="bi {{ e.icone }}"></i></span>
+                        <div><strong>{{ e.nome }}</strong><br><small class="text-2">{{ e.categoria_nome }} · {{ e.local }}</small></div>
+                    </div></td>
+                    <td class="text-nowrap">{{ e.data_obj|date:"d/m/Y" }}<br><small class="text-2">{{ e.horario }}</small></td>
+                    <td><span class="badge-status status-{{ e.status }}">{{ e.status_nome }}</span></td>
+                    <td class="text-end">{{ m.visualizacoes|num }}</td>
+                    <td class="text-end fw-600">{{ m.interessados|num }}</td>
+                    <td class="text-end">{% if e.status == 'realizado' or m.checkins %}{{ m.checkins|num }} <small class="text-2">check-ins</small>{% else %}{{ m.presenca_provavel|num }} <small class="text-2">vão</small>{% endif %}</td>
+                    <td class="text-end">{% if m.nota_media %}<span class="nota-pill {% if m.nota_media < 3.8 %}nota-baixa{% endif %}"><i class="bi bi-star-fill"></i>{{ m.nota_media|num:1 }}</span>{% else %}<span class="text-2">—</span>{% endif %}</td>
+                    <td class="text-end text-nowrap">{{ m.investimento|brl }}</td>
+                </tr>
+            {% endwith %}{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %}area-admin{% endblock %}
+
+{% block corpo %}
+<div class="admin-mobile-nav">
+    <a class="logo" href="{% url 'dashboard:painel' %}"><span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}</a>
+    <nav>
+        <a href="{% url 'dashboard:painel' %}" aria-label="Painel"><i class="bi bi-grid-1x2"></i></a>
+        <a href="{% url 'dashboard:eventos' %}" aria-label="Eventos"><i class="bi bi-calendar3"></i></a>
+        <a href="{% url 'dashboard:novo_evento' %}" aria-label="Novo evento"><i class="bi bi-plus-circle"></i></a>
+    </nav>
+</div>
+<div class="admin-layout">
+    <aside class="sidebar">
+        <a class="logo" href="{% url 'dashboard:painel' %}"><span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}</a>
+        <nav>
+            <div class="rotulo">Inteligência</div>
+            <a href="{% url 'dashboard:painel' %}" class="{% if secao == 'painel' %}ativo{% endif %}"><i class="bi bi-grid-1x2"></i> Painel</a>
+            <a href="{% url 'dashboard:painel' %}#ia"><i class="bi bi-stars"></i> Recomendações da IA</a>
+            <a href="{% url 'dashboard:painel' %}#demanda"><i class="bi bi-clipboard-data"></i> Validação de demanda</a>
+            <div class="rotulo">Programação</div>
+            <a href="{% url 'dashboard:eventos' %}" class="{% if secao == 'eventos' %}ativo{% endif %}"><i class="bi bi-calendar3"></i> Eventos</a>
+            <a href="{% url 'dashboard:novo_evento' %}"><i class="bi bi-plus-circle"></i> Novo evento</a>
+            <div class="rotulo">Demonstração</div>
+            <a href="{% url 'eventos:inicio' %}" target="_blank"><i class="bi bi-phone"></i> Ver como visitante</a>
+            <form method="post" action="{% url 'dashboard:reiniciar' %}">
+                {% csrf_token %}
+                <button type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reiniciar dados</button>
+            </form>
+        </nav>
+        <div class="rodape">{{ SLOGAN_PROJETO }}<br>Protótipo · Hackarun Palmas</div>
+    </aside>
+
+    <main class="admin-main">
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'success' %}success{% else %}info{% endif %} alert-pulse alert-dismissible fade show">
+                {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        {% block conteudo %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script>
+    Chart.defaults.font.family = "Poppins, system-ui, sans-serif";
+    Chart.defaults.color = "#6b6785";
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.tooltip.backgroundColor = "#14112b";
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.cornerRadius = 10;
+</script>
+{% block scripts_admin %}{% endblock %}
+{% endblock %}

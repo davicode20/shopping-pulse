@@ -1,0 +1,58 @@
+{% extends "visitante/base_visitante.html" %}
+{% load pulse %}
+
+{% block conteudo %}
+<div class="descobrir-topo d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h5 mb-0">Descobrir</h1>
+        <small class="text-2"><span id="restantes">{{ eventos|length }}</span> experiências para você avaliar</small>
+    </div>
+    <a href="{% url 'eventos:agenda' %}" class="btn-suave btn btn-sm"><i class="bi bi-calendar-heart"></i> Agenda</a>
+</div>
+
+<div class="deck" id="deck" data-url="{% url 'participacao:interesse' %}">
+    <div class="deck-vazio" id="deckVazio" {% if eventos %}hidden{% endif %}>
+        <div class="icone-grande"><i class="bi bi-check2-all"></i></div>
+        <h2 class="h5">Você viu tudo por aqui!</h2>
+        <p class="text-2 small">Suas escolhas já estão ajudando o shopping a montar a próxima programação.</p>
+        <a href="{% url 'eventos:agenda' %}" class="btn btn-pulse">Ver minhas recomendações</a>
+    </div>
+
+    {% for evento in eventos reversed %}
+    <article class="swipe-card" data-evento="{{ evento.id }}" data-nome="{{ evento.nome }}">
+        <span class="selo selo-quero">QUERO!</span>
+        <span class="selo selo-passo">PASSO</span>
+        <div class="capa cat-{{ evento.categoria }}">
+            {% if evento.imagem %}<img src="{{ evento.imagem }}" alt="" draggable="false">{% endif %}
+            <i class="bi {{ evento.icone }} capa-icone"></i>
+            <span class="badge-cat"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
+            {% if evento.status == 'proposta' %}<span class="badge-status status-proposta"><i class="bi bi-lightbulb"></i> Ideia em votação</span>{% endif %}
+            <div class="capa-titulo"><h2>{{ evento.nome }}</h2></div>
+        </div>
+        <div class="corpo">
+            <p class="descricao">{{ evento.descricao }}</p>
+            <div class="meta">
+                <span><i class="bi bi-calendar-event"></i> {{ evento.data_obj|date:"l, d \d\e F" }} · {{ evento.horario }}</span>
+                <span><i class="bi bi-geo-alt"></i> {{ evento.local }}</span>
+            </div>
+            <div class="prova-social mt-2"><i class="bi bi-people-fill"></i> <b>{{ evento.total_interessados|num }}</b> pessoas já demonstraram interesse</div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<div class="deck-acoes" {% if not eventos %}hidden{% endif %} id="deckAcoes">
+    <button class="btn-passo" id="btnPasso" aria-label="Não tenho interesse"><i class="bi bi-x-lg"></i></button>
+    <button class="btn-quero" id="btnQuero" aria-label="Tenho interesse"><i class="bi bi-heart-fill"></i></button>
+    <button class="btn-info" id="btnInfo" aria-label="Ver detalhes"><i class="bi bi-info-lg"></i></button>
+</div>
+<p class="dica-swipe" {% if not eventos %}hidden{% endif %}>Arraste para a direita se quiser ir, para a esquerda se não curtir.</p>
+
+{% include "visitante/_faixa.html" %}
+{% endblock %}
+
+{% block scripts %}
+{% load static %}
+<script>window.URL_DETALHE = "{% url 'eventos:detalhe' 0 %}";</script>
+<script src="{% static 'js/swipe.js' %}"></script>
+{% endblock %}

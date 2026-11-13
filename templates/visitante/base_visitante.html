@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block body_class %}area-visitante{% endblock %}
+
+{% block corpo %}
+<div class="app-shell">
+    {% block topbar %}
+    <header class="topbar">
+        <a class="logo" href="{% url 'eventos:inicio' %}">
+            <span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}
+        </a>
+        <a class="acao" href="{% url 'eventos:agenda' %}" aria-label="Minha agenda"><i class="bi bi-person-circle"></i></a>
+    </header>
+    {% endblock %}
+
+    <main>{% block conteudo %}{% endblock %}</main>
+
+    <nav class="tabbar">
+        <a href="{% url 'eventos:inicio' %}" class="{% if aba == 'inicio' %}ativo{% endif %}"><i class="bi bi-house-door{% if aba == 'inicio' %}-fill{% endif %}"></i>Início</a>
+        <a href="{% url 'eventos:propostas' %}" class="{% if aba == 'propostas' %}ativo{% endif %}"><i class="bi bi-hand-thumbs-up{% if aba == 'propostas' %}-fill{% endif %}"></i>Ajude a decidir</a>
+        <a href="{% url 'eventos:descobrir' %}" class="tab-central {% if aba == 'descobrir' %}ativo{% endif %}"><i class="bi bi-fire"></i>Descobrir</a>
+        <a href="{% url 'eventos:agenda' %}" class="{% if aba == 'agenda' %}ativo{% endif %}"><i class="bi bi-calendar-heart{% if aba == 'agenda' %}-fill{% endif %}"></i>Minha agenda</a>
+    </nav>
+</div>
+{% endblock %}
