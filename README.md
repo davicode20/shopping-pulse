@@ -19,13 +19,29 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # se o .env ainda não existir
-python manage.py definir_admin   # usuário e senha do painel (a senha fica como hash no .env)
+python manage.py migrate         # cria o banco db.sqlite3 (obrigatório antes do login)
+python manage.py definir_admin   # cria o administrador do painel (usuário e senha no banco)
 python manage.py runserver 0.0.0.0:8000
 ```
 
-**Login do painel:** `/painel/` pede usuário e senha, definidos com `python manage.py definir_admin`. Rode o comando de novo para trocar. A área do visitante continua aberta.
+Se aparecer `no such table` ao entrar, falta o `migrate`.
 
-**Modo apresentação:** rode `python manage.py runserver 0.0.0.0:8000 --noreload`. Sem o `--noreload`, salvar qualquer arquivo do projeto reinicia o servidor e **apaga as interações feitas ao vivo** (os dados ficam em memória). Para expor a demo fora da rede local (ex.: ngrok), use `DJANGO_DEBUG=False` e uma `DJANGO_SECRET_KEY` própria: com `DEBUG=False`, o servidor se recusa a subir com a chave de exemplo.
+Se a porta 8000 já estiver em uso, um servidor antigo pode estar respondendo no lugar do atual. Sintomas: `/participacao/conta/` dá 404, ou `/painel/` abre sem pedir senha. Para liberar a porta no Windows:
+
+```
+netstat -ano | findstr :8000
+taskkill /PID <número_do_PID> /F
+```
+
+Use o número da última coluna. Ou rode em outra porta, por exemplo `python manage.py runserver 8001`.
+
+**Login do painel:** `/painel/` pede usuário e senha de um administrador. Crie com `python manage.py definir_admin`; rode de novo para trocar a senha. Este login é separado da área do visitante.
+
+**Conta do visitante (opcional):** em `/participacao/conta/` (ícone de pessoa no topo da área do visitante) é possível criar uma conta ou entrar. Ao entrar, as interações feitas antes no mesmo navegador passam para a conta. A área do visitante continua aberta sem conta.
+
+**Dados:** eventos e interações ficam no banco `db.sqlite3`, na raiz do projeto, que não vai para o Git. O botão **Reiniciar dados** volta aos eventos do `data/eventos.json` e à base simulada. Para atualizar só os eventos a partir do JSON, sem apagar nada, use `python manage.py carregar_eventos`.
+
+Para expor a demo fora da rede local (ex.: ngrok), use `DJANGO_DEBUG=False` e uma `DJANGO_SECRET_KEY` própria: com `DEBUG=False`, o servidor se recusa a subir com a chave de exemplo.
 
 | Área | Endereço |
 |---|---|
@@ -76,20 +92,20 @@ python manage.py runserver 0.0.0.0:8000
 > Dica: antes de apresentar, entre no painel, clique em **Reiniciar dados** na barra lateral e gere uma análise da IA.
 
 ## Decisões do protótipo
-- **Sem banco de dados.** Os eventos vêm de `data/eventos.json` e as interações ficam em memória (`apps/eventos/repositorio.py`). Ao reiniciar o servidor, os dados voltam ao estado inicial. As sessões usam cookies assinados, então não há `migrate`.
+- **Banco SQLite (D-004).** Eventos e interações ficam no banco, pelo ORM do Django (`apps/eventos/models.py`, `apps/eventos/repositorio.py`). Há uma interação por tipo e visitante por evento, exceto visualização. As sessões também ficam no banco, então o logout invalida a sessão no servidor.
 - **Dados simulados identificados.** A base histórica é gerada por `apps/eventos/simulacao.py` (semente fixa, sempre igual). Toda interação tem a flag `simulado`, e o painel mostra quantas interações são reais.
 - **Números calculados pela aplicação** (`apps/dashboard/metricas.py`). A IA só interpreta (`apps/inteligencia/servico.py`).
 - **IA com plano B:** se o Gemini não responder, as recomendações por regras usam os mesmos indicadores.
 - **Bibliotecas locais** em `static/vendor/` (Bootstrap, Icons, Chart.js): a demo não depende da internet do evento. Só a fonte Poppins vem do Google Fonts, com fallback para a fonte do sistema.
 - **Nome configurável:** altere `NOME_PROJETO` no `.env` (Circulaê, Nexora, Vibraê...).
-- **Login sem banco de dados.** Um administrador definido no `.env` (senha como hash PBKDF2), sessão em cookie assinado com expiração de 12 h, bloqueio após 5 tentativas erradas e "Gerar nova análise" limitado a uma chamada a cada 15 s (`apps/dashboard/acesso.py`). Com banco de dados, a troca para o `django.contrib.auth` mexe só nesse módulo, porque as views usam o decorator `@admin_requerido`.
+- **Login pelo `django.contrib.auth`.** Administradores são usuários com `is_staff`, criados com `definir_admin` (`apps/dashboard/acesso.py`). Sessão de 12 h no banco, bloqueio após 5 tentativas erradas e "Gerar nova análise" limitado a uma chamada a cada 15 s. As views usam o decorator `@admin_requerido`. Visitantes têm conta própria (`apps/participacao/contas.py`), sem acesso ao painel.
 
 ## Estrutura
 ```
 config/            settings, urls, context processor (nome/slogan)
 apps/
-  eventos/         área do visitante, repositório em memória, simulação, filtros de template
-  participacao/    interesse, presença, check-in (QR + token), avaliação
+  eventos/         área do visitante, modelos e repositório (SQLite), simulação, filtros de template
+  participacao/    interesse, presença, check-in (QR + token), avaliação, conta do visitante
   dashboard/       painel, métricas, cadastro de eventos, QR Code, ferramentas da demo
   inteligencia/    Gemini + análise por regras (plano B) + exportação para o Miro
 data/              eventos.json
