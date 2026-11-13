@@ -70,6 +70,13 @@ def destino_seguro(request, url, padrao):
 
 
 def _ip(request):
+    """IP real do visitante. Atrás de um proxy (Render), REMOTE_ADDR é o IP do proxy para todo mundo:
+    sem isso, 5 erros de qualquer pessoa bloqueariam o login de todos. O último item do X-Forwarded-For
+    é o que o próprio proxy acrescentou (os anteriores podem ser forjados pelo cliente)."""
+    if settings.PROXY_CONFIAVEL:
+        encaminhado = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        if encaminhado:
+            return encaminhado.split(",")[-1].strip()
     return request.META.get("REMOTE_ADDR", "desconhecido")
 
 
