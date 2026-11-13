@@ -161,20 +161,37 @@
                 ? `<i class="bi bi-google"></i> Google Gemini · ${esc(r.modelo)}`
                 : '<i class="bi bi-cpu"></i> Modo demonstração (regras sobre os dados)';
             const prio = { alta: "Alta", media: "Média", baixa: "Baixa" };
+            // Números que a checagem não encontrou nos dados: destacados onde aparecem
+            const v = r.verificacao || { citados: 0, conferidos: 0, nao_encontrados: [] };
+            const suspeitos = [...new Set(v.nao_encontrados.map(n => n.numero))];
+            const marcar = (texto) => {
+                let html = esc(texto);
+                suspeitos.forEach(n => {
+                    const alvo = new RegExp(`(?<![\\d.,])${n.replace(/[.]/g, "\\.")}(?![\\d])`, "g");
+                    html = html.replace(alvo, `<mark class="num-suspeito" title="Número não encontrado nos dados calculados">${n}</mark>`);
+                });
+                return html;
+            };
+            const selo = !v.citados ? "" : suspeitos.length
+                ? `<div class="ia-verificacao alerta"><i class="bi bi-exclamation-diamond-fill"></i>
+                       <span><strong>${v.nao_encontrados.length} de ${v.citados} números citados não foram encontrados nos dados calculados</strong> (destacados no texto). Confira antes de decidir.</span></div>`
+                : `<div class="ia-verificacao ok"><i class="bi bi-patch-check-fill"></i>
+                       <span>${v.conferidos} de ${v.citados} números citados conferidos com os dados calculados pela plataforma.</span></div>`;
             conteudo.innerHTML = `
-                <p class="ia-resumo">${esc(a.resumo)}</p>
+                ${selo}
+                <p class="ia-resumo">${marcar(a.resumo)}</p>
                 <div class="row g-4">
                     <div class="col-lg-4">
                         <div class="ia-subtitulo">O que os dados mostram</div>
-                        <ul class="ia-lista mb-3">${(a.destaques || []).map(t => `<li><i class="bi bi-lightning-charge-fill"></i><span>${esc(t)}</span></li>`).join("")}</ul>
-                        ${(a.alertas || []).map(t => `<div class="ia-alerta mb-2"><i class="bi bi-exclamation-triangle-fill"></i><span>${esc(t)}</span></div>`).join("")}
+                        <ul class="ia-lista mb-3">${(a.destaques || []).map(t => `<li><i class="bi bi-lightning-charge-fill"></i><span>${marcar(t)}</span></li>`).join("")}</ul>
+                        ${(a.alertas || []).map(t => `<div class="ia-alerta mb-2"><i class="bi bi-exclamation-triangle-fill"></i><span>${marcar(t)}</span></div>`).join("")}
                     </div>
                     <div class="col-lg-5">
                         <div class="ia-subtitulo">Recomendações</div>
                         <div class="row g-2">${(a.recomendacoes || []).map(rc => `
                             <div class="col-md-6"><div class="rec-item">
                                 <span class="prio prio-${esc(rc.prioridade)}">Prioridade ${prio[rc.prioridade] || esc(rc.prioridade)}</span>
-                                <h3>${esc(rc.titulo)}</h3><p>${esc(rc.descricao)}</p>
+                                <h3>${marcar(rc.titulo)}</h3><p>${marcar(rc.descricao)}</p>
                             </div></div>`).join("")}
                         </div>
                     </div>
@@ -182,7 +199,7 @@
                         <div class="ia-subtitulo">Eventos sugeridos</div>
                         ${(a.sugestoes_eventos || []).map(s => `
                             <div class="sug-item"><i class="bi bi-lightbulb-fill"></i>
-                            <div><strong>${esc(s.nome)}</strong><small>${esc(s.categoria)} · ${esc(s.justificativa)}</small></div></div>`).join("")}
+                            <div><strong>${esc(s.nome)}</strong><small>${esc(s.categoria)} · ${marcar(s.justificativa)}</small></div></div>`).join("")}
                     </div>
                 </div>
                 <details class="ia-dados mt-3">

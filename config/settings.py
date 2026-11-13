@@ -77,7 +77,10 @@ SLOGAN_PROJETO = "Transformando preferências em experiências."
 
 # Inteligência artificial (Gemini). Sem chave => modo demonstração com análises prontas.
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+# Reservas (separadas por vírgula), usadas se o principal estiver sobrecarregado ou lento
+GEMINI_MODELOS_RESERVA = os.getenv("GEMINI_MODELOS_RESERVA", "gemini-3.5-flash-lite")
+GEMINI_TEMPO_LIMITE = int(os.getenv("GEMINI_TEMPO_LIMITE", "35"))  # segundos, para o modelo principal
 
 # Endereço público usado nos QR Codes (ex.: http://192.168.0.10:8000 ou uma URL do ngrok).
 # Vazio => usa o endereço acessado; se for localhost, troca pelo IP da rede automaticamente.

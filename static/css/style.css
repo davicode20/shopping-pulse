@@ -437,6 +437,13 @@ a, button, label, .chip, .btn { touch-action: manipulation; }
 .miro-resultado.ok { background: rgba(19, 180, 126, .15); border: 1px solid rgba(19, 180, 126, .4); color: #c9f5e4; }
 .miro-resultado.erro { background: rgba(255, 61, 127, .15); border: 1px solid rgba(255, 61, 127, .35); color: #ffd0df; }
 .miro-resultado span { flex: 1; min-width: 200px; }
+.ia-verificacao { display: flex; gap: .55rem; align-items: flex-start; margin-top: 1rem; font-size: .82rem; border-radius: 12px; padding: .55rem .8rem; }
+.ia-verificacao.ok { background: rgba(19, 180, 126, .14); color: #b9f0db; }
+.ia-verificacao.ok i { color: #4be08f; }
+.ia-verificacao.alerta { background: rgba(255, 184, 0, .14); border: 1px solid rgba(255, 184, 0, .4); color: #ffe7a8; }
+.ia-verificacao.alerta i { color: #ffb800; }
+.ia-verificacao + .ia-resumo { margin-top: .8rem; }
+mark.num-suspeito { background: rgba(255, 184, 0, .3); color: #fff; padding: 0 .2rem; border-radius: 4px; border-bottom: 2px dashed #ffb800; cursor: help; }
 .ia-carregando { display: flex; align-items: center; gap: .7rem; color: #cfc9ea; padding: 1.5rem 0; }
 .ia-dados summary { font-size: .78rem; color: #a59fcf; cursor: pointer; }
 .ia-dados pre { font-size: .7rem; color: #cfc9ea; background: rgba(0, 0, 0, .25); border-radius: 10px; padding: .8rem; max-height: 260px; overflow: auto; margin-top: .5rem; }

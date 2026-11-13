@@ -122,7 +122,9 @@ def montar_itens(resultado, indicadores):
     """
     analise = resultado["analise"]
     agora = timezone.localtime()
-    fonte = "Google Gemini" if resultado.get("fonte") == "gemini" else "modo demonstração (regras)"
+    fonte = f"Google Gemini ({resultado.get('modelo')})" if resultado.get("fonte") == "gemini" else "modo demonstração (regras)"
+    v = resultado.get("verificacao") or {}
+    checagem = (f"{v['conferidos']} de {v['citados']} números conferidos com os dados" if v.get("citados") else "")
 
     colunas = []
     if analise.get("destaques"):
@@ -165,8 +167,9 @@ def montar_itens(resultado, indicadores):
         {"tipo": "texto", "x": largura / 2, "y": 150, "largura": largura - 2 * MARGEM, "tamanho": 64,
          "conteudo": f"<p><strong>{_e(settings.NOME_PROJETO)} · Próxima programação</strong></p>"},
         {"tipo": "texto", "x": largura / 2, "y": 250, "largura": largura - 2 * MARGEM, "tamanho": 28,
-         "conteudo": _p(f"Gerado em {agora:%d/%m/%Y às %H:%M} · análise: {fonte} · "
-                        "números calculados pela plataforma, a IA apenas interpreta")},
+         "conteudo": _p(_e(" · ".join(filter(None, [
+             f"Gerado em {agora:%d/%m/%Y às %H:%M}", f"análise: {fonte}",
+             "números calculados pela plataforma, a IA apenas interpreta", checagem]))))},
         {"tipo": "resumo", "x": largura / 2, "y": 430, "largura": largura - 2 * MARGEM, "altura": 200,
          "conteudo": _p(_e(analise.get("resumo")))},
     ]

@@ -32,7 +32,9 @@ python manage.py runserver 0.0.0.0:8000
 
 **Miro:** coloque `MIRO_ACCESS_TOKEN` (app em developers.miro.com com escopo `boards:write`) e `MIRO_BOARD_ID` (ID ou link do quadro) no `.env`. O botão **Exportar para o Miro** cria no quadro um frame com a análise: resumo, destaques, recomendações (sticky notes coloridos por prioridade), eventos sugeridos (cards), validação de demanda e alertas. Sem token, o botão vira **Baixar para o Miro (CSV)**, para importar manualmente.
 
-**IA real:** coloque a chave em `GEMINI_API_KEY` no `.env`. Sem chave (ou se a API falhar), o painel usa o **modo demonstração**: recomendações por regras, geradas a partir dos mesmos números calculados.
+**IA real:** coloque a chave em `GEMINI_API_KEY` no `.env` (gere em https://aistudio.google.com/apikey). O modelo padrão é o `gemini-3.5-flash` (cerca de 20 s por análise); se ele estiver sobrecarregado, o painel tenta os modelos de `GEMINI_MODELOS_RESERVA` (padrão: `gemini-3.5-flash-lite`). Sem chave, ou se nenhum modelo responder, o painel usa o **modo demonstração**: recomendações por regras, geradas a partir dos mesmos números calculados.
+
+**Checagem dos números:** a resposta da IA tem formato garantido por schema, e cada número citado é conferido com os dados enviados (`apps/inteligencia/verificacao.py`). O painel mostra "N de N números conferidos" e destaca em amarelo qualquer número que não exista nos dados.
 
 ## Funcionalidades
 
@@ -62,7 +64,7 @@ python manage.py runserver 0.0.0.0:8000
 4. **Celular** (projete ou passe para os avaliadores): abra o site, escolha a faixa etária e deslize os cartões. O novo evento aparece. **No painel, o contador "interações reais" e a atividade recente mudam na hora.**
 5. No detalhe do evento, clique em **Simular +150 visitantes** para mostrar a escala.
 6. **O evento acontece:** escaneie o QR Code da tela com o celular → check-in confirmado (confete 🎉) → **avaliação**.
-7. **Recomendações da IA** → "Gerar nova análise". Destaque que a IA **não inventa números**: os indicadores são calculados pela aplicação e a IA apenas interpreta (abra o painel de transparência).
+7. **Recomendações da IA** → "Gerar nova análise" (leva cerca de 20 s: gere uma vez antes de apresentar). Destaque que a IA **não inventa números**: os indicadores são calculados pela aplicação, a IA apenas interpreta, e o selo verde mostra que **cada número citado foi conferido** com os dados (abra também o painel de transparência).
 8. **Exportar para o Miro** → abra o quadro: "a recomendação já vira o planejamento da equipe".
 9. Feche com o ciclo e a visão de SaaS.
 

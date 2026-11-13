@@ -5,12 +5,19 @@ Inteligência: interpretação dos indicadores e recomendações estratégicas.
 - Com GEMINI_API_KEY: o Gemini interpreta os números e devolve JSON estruturado.
 - Sem chave (ou se a chamada falhar): análise por regras, montada a partir dos MESMOS
   números calculados. Assim a apresentação nunca depende da internet e nada é inventado.
+- A resposta do Gemini tem formato garantido (schema) e cada número citado é conferido
+  com os dados enviados (verificacao.py); o que não bater é destacado no painel.
+- Se o modelo principal estiver sobrecarregado, tenta os modelos de reserva antes do plano B.
 """
 import json
 import logging
 import threading
+from typing import Literal
 
 from django.conf import settings
+from pydantic import BaseModel, Field, ValidationError
+
+from .verificacao import verificar
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +31,8 @@ Regras obrigatórias:
 - Use SOMENTE os números fornecidos. Não invente estatísticas, percentuais ou valores.
 - Ao citar um número, ele deve existir nos dados abaixo.
 - Seja objetivo e prático. Escreva em português do Brasil.
+- Escreva números no formato brasileiro: 1.644 (milhar com ponto), 75,4% (decimal com vírgula)
+  e valores em dinheiro com R$ (ex.: R$ 46,88). Copie os números como estão nos dados, sem recalcular.
 - "aprovacao" = % de interessados entre quem deslizou o cartão (interesse vs. sem interesse).
 - "comparecimento" = % de check-ins em relação aos interessados.
 - Eventos com status "proposta" ainda não aconteceram: estão em validação de demanda.
@@ -48,6 +57,27 @@ Indicadores:
 
 _cache = {"chave": None, "resultado": None}
 _trava = threading.Lock()
+
+
+# Formato obrigatório da resposta (enviado ao Gemini como schema e validado na volta)
+class Recomendacao(BaseModel):
+    titulo: str
+    descricao: str
+    prioridade: Literal["alta", "media", "baixa"]
+
+
+class SugestaoEvento(BaseModel):
+    nome: str
+    categoria: str
+    justificativa: str
+
+
+class Analise(BaseModel):
+    resumo: str = Field(min_length=1)
+    destaques: list[str]
+    recomendacoes: list[Recomendacao]
+    sugestoes_eventos: list[SugestaoEvento]
+    alertas: list[str]
 
 
 def _dados_para_ia(ind):
@@ -167,21 +197,46 @@ def analise_por_regras(ind):
             "sugestoes_eventos": sugestoes, "alertas": alertas}
 
 
-def _consultar_gemini(dados):
+def _modelos():
+    """Modelo principal + reservas (sem repetir), na ordem de tentativa."""
+    lista = [settings.GEMINI_MODEL] + [m.strip() for m in settings.GEMINI_MODELOS_RESERVA.split(",")]
+    return list(dict.fromkeys(m for m in lista if m))
+
+
+def _consultar_gemini(dados, modelo, tempo_limite):
     from google import genai
     from google.genai import types
 
-    cliente = genai.Client(api_key=settings.GEMINI_API_KEY,
-                           http_options=types.HttpOptions(timeout=25_000))
+    # sem novas tentativas automáticas do SDK: quem decide o que fazer na falha somos nós
+    cliente = genai.Client(api_key=settings.GEMINI_API_KEY, http_options=types.HttpOptions(
+        timeout=tempo_limite * 1000, retry_options=types.HttpRetryOptions(attempts=1)))
     resposta = cliente.models.generate_content(
-        model=settings.GEMINI_MODEL,
+        model=modelo,
         contents=PROMPT.format(indicadores=json.dumps(dados, ensure_ascii=False, indent=1)),
-        config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.4),
+        config=types.GenerateContentConfig(response_mime_type="application/json",
+                                           response_schema=Analise, temperature=0.4),
     )
-    analise = json.loads(resposta.text)
-    for campo in ("resumo", "destaques", "recomendacoes", "sugestoes_eventos", "alertas"):
-        analise.setdefault(campo, [] if campo != "resumo" else "")
+    analise = Analise.model_validate_json(resposta.text).model_dump()
+    # limites do prompt (o schema garante o formato; aqui garantimos o tamanho do painel)
+    for campo, limite in (("destaques", 4), ("recomendacoes", 4), ("sugestoes_eventos", 3), ("alertas", 4)):
+        analise[campo] = analise[campo][:limite]
+    ordem = {"alta": 0, "media": 1, "baixa": 2}
+    analise["recomendacoes"].sort(key=lambda r: ordem[r["prioridade"]])
     return analise
+
+
+def _tentar_modelos(dados):
+    """Tenta o principal e as reservas; devolve (modelo, análise) ou None. Loga cada falha."""
+    for i, modelo in enumerate(_modelos()):
+        # o principal ganha mais tempo (raciocina mais); as reservas são modelos mais leves
+        tempo = settings.GEMINI_TEMPO_LIMITE if i == 0 else max(settings.GEMINI_TEMPO_LIMITE // 2, 10)
+        try:
+            return modelo, _consultar_gemini(dados, modelo, tempo)
+        except ValidationError:
+            logger.warning("Gemini (%s) respondeu fora do formato esperado.", modelo)
+        except Exception as erro:  # sobrecarga (503), tempo esgotado (504), rede...
+            logger.warning("Gemini (%s) falhou: %s", modelo, str(erro)[:200])
+    return None
 
 
 def gerar_analise(indicadores, forcar=False):
@@ -194,15 +249,16 @@ def gerar_analise(indicadores, forcar=False):
 
     resultado = None
     if settings.GEMINI_API_KEY:
-        try:
-            resultado = {"fonte": "gemini", "modelo": settings.GEMINI_MODEL,
-                         "analise": _consultar_gemini(dados)}
-        except Exception:  # protótipo: qualquer falha cai no plano B
-            logger.exception("Falha ao consultar o Gemini; usando análise por regras.")
+        tentativa = _tentar_modelos(dados)
+        if tentativa:
+            resultado = {"fonte": "gemini", "modelo": tentativa[0], "analise": tentativa[1]}
+        else:
+            logger.error("Nenhum modelo do Gemini respondeu; usando análise por regras.")
     if resultado is None:
         resultado = {"fonte": "regras", "analise": analise_por_regras(indicadores)}
 
     resultado["dados_enviados"] = dados
+    resultado["verificacao"] = verificar(resultado["analise"], dados)
     with _trava:
         _cache.update(chave=chave, resultado=resultado)
     return resultado
