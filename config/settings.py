@@ -82,3 +82,7 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 # Endereço público usado nos QR Codes (ex.: http://192.168.0.10:8000 ou uma URL do ngrok).
 # Vazio => usa o endereço acessado; se for localhost, troca pelo IP da rede automaticamente.
 URL_PUBLICA = os.getenv("URL_PUBLICA", "")
+
+# Miro: exporta as recomendações para o quadro da equipe. Sem token => download em CSV (plano B).
+MIRO_ACCESS_TOKEN = os.getenv("MIRO_ACCESS_TOKEN", "")
+MIRO_BOARD_ID = os.getenv("MIRO_BOARD_ID", "")  # ID (uXjV...=) ou o link do quadro

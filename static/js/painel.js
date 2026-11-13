@@ -194,6 +194,36 @@
             conteudo.innerHTML = '<p class="ia-resumo">Não foi possível gerar a análise agora. Tente novamente.</p>';
         } finally {
             botao.disabled = false;
+            const btnMiro = document.getElementById("btnMiro");
+            if (btnMiro) btnMiro.disabled = false; // só exporta depois que há análise na tela
+        }
+    }
+
+    // ---------- Miro: INTELIGÊNCIA → NOVO PLANEJAMENTO ----------
+    async function exportarMiro() {
+        const botao = document.getElementById("btnMiro");
+        const caixa = document.getElementById("miroResultado");
+        const original = botao.innerHTML;
+        botao.disabled = true;
+        botao.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando ao Miro…';
+        try {
+            const resposta = await fetch(cfg.urlMiro, {
+                method: "POST",
+                headers: { "X-CSRFToken": obterCsrfToken(), "X-Requested-With": "fetch" },
+            });
+            const r = await resposta.json();
+            if (!r.ok) throw new Error(r.erro || "Falha ao exportar.");
+            caixa.className = "miro-resultado ok";
+            caixa.innerHTML = `<i class="bi bi-check-circle-fill"></i>
+                <span><strong>${esc(r.titulo)}</strong> criado no quadro com ${r.itens} itens${r.falhas ? ` (${r.falhas} falharam)` : ""}.</span>
+                <a href="${esc(r.link)}" target="_blank" rel="noopener" class="btn btn-ia btn-sm"><i class="bi bi-box-arrow-up-right"></i> Abrir no Miro</a>`;
+        } catch (err) {
+            caixa.className = "miro-resultado erro";
+            caixa.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>${esc(err.message)}</span>`;
+        } finally {
+            caixa.hidden = false;
+            botao.disabled = false;
+            botao.innerHTML = original;
         }
     }
 
@@ -201,6 +231,8 @@
     renderTudo(JSON.parse(document.getElementById("dados-painel").textContent), true);
     carregarIa(false);
     document.getElementById("btnIa").addEventListener("click", () => carregarIa(true));
+    const btnMiro = document.getElementById("btnMiro");
+    if (btnMiro) btnMiro.addEventListener("click", exportarMiro);
 
     setInterval(async () => {
         if (document.hidden) return;

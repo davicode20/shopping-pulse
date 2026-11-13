@@ -431,6 +431,12 @@ a, button, label, .chip, .btn { touch-action: manipulation; }
 .ia-alerta { background: rgba(255, 61, 127, .15); border: 1px solid rgba(255, 61, 127, .35); border-radius: 12px; padding: .6rem .8rem; font-size: .84rem; color: #ffd0df; display: flex; gap: .5rem; }
 .btn-ia { background: rgba(255, 255, 255, .12); color: #fff; border: 1px solid rgba(255, 255, 255, .2); border-radius: 999px; font-size: .82rem; padding: .4rem .9rem; }
 .btn-ia:hover { background: rgba(255, 255, 255, .2); color: #fff; }
+.btn-miro { background: #ffd02f; color: #050038; border-color: #ffd02f; font-weight: 600; }
+.btn-miro:hover, .btn-miro:focus { background: #ffdc5c; color: #050038; }
+.miro-resultado { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; border-radius: 12px; padding: .7rem .9rem; font-size: .86rem; }
+.miro-resultado.ok { background: rgba(19, 180, 126, .15); border: 1px solid rgba(19, 180, 126, .4); color: #c9f5e4; }
+.miro-resultado.erro { background: rgba(255, 61, 127, .15); border: 1px solid rgba(255, 61, 127, .35); color: #ffd0df; }
+.miro-resultado span { flex: 1; min-width: 200px; }
 .ia-carregando { display: flex; align-items: center; gap: .7rem; color: #cfc9ea; padding: 1.5rem 0; }
 .ia-dados summary { font-size: .78rem; color: #a59fcf; cursor: pointer; }
 .ia-dados pre { font-size: .7rem; color: #cfc9ea; background: rgba(0, 0, 0, .25); border-radius: 10px; padding: .8rem; max-height: 260px; overflow: auto; margin-top: .5rem; }

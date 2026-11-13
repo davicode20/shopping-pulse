@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 
 from apps.eventos import repositorio as repo
 from apps.eventos import simulacao
+from apps.inteligencia import miro
 from apps.participacao.checkin import url_checkin
 
 from .forms import EventoForm
@@ -16,7 +17,9 @@ from .metricas import detalhe_evento, metricas_por_evento, payload_painel
 
 
 def painel(request):
-    return render(request, "administrativo/painel.html", {"dados": payload_painel(), "secao": "painel"})
+    return render(request, "administrativo/painel.html", {
+        "dados": payload_painel(), "secao": "painel", "miro_configurado": miro.configurado(),
+    })
 
 
 def dados(request):

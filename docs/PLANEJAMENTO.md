@@ -389,7 +389,7 @@ flowchart LR
 | Validação de demanda (propostas) | Desejável | ✅ Implementado |
 | Recomendações personalizadas ao visitante | Desejável | ✅ Implementado |
 | Quadro de planejamento da equipe no Miro | Essencial (tecnologia sorteada) | 🔄 Em andamento |
-| Exportar recomendações para o Miro (API) | Desejável | 📋 Planejado |
+| Exportar recomendações para o Miro (API) | Desejável | ✅ Implementado |
 | Login da administração | Futura | — |
 | Banco de dados (persistência) | Futura | — |
 | Programa de fidelidade, cupons e *cashback* | Futura | — |

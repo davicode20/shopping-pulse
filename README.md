@@ -30,6 +30,8 @@ python manage.py runserver 0.0.0.0:8000
 
 **Celular na mesma rede Wi-Fi:** acesse `http://IP-DO-PC:8000/`. O QR Code de check-in já troca `localhost` pelo IP da rede automaticamente. Se precisar, fixe o endereço com `URL_PUBLICA` no `.env`.
 
+**Miro:** coloque `MIRO_ACCESS_TOKEN` (app em developers.miro.com com escopo `boards:write`) e `MIRO_BOARD_ID` (ID ou link do quadro) no `.env`. O botão **Exportar para o Miro** cria no quadro um frame com a análise: resumo, destaques, recomendações (sticky notes coloridos por prioridade), eventos sugeridos (cards), validação de demanda e alertas. Sem token, o botão vira **Baixar para o Miro (CSV)**, para importar manualmente.
+
 **IA real:** coloque a chave em `GEMINI_API_KEY` no `.env`. Sem chave (ou se a API falhar), o painel usa o **modo demonstração**: recomendações por regras, geradas a partir dos mesmos números calculados.
 
 ## Funcionalidades
@@ -47,6 +49,7 @@ python manage.py runserver 0.0.0.0:8000
 ### Administração
 - **Painel ao vivo** (atualiza a cada 5 s): KPIs, evolução do engajamento, interesse por categoria, top eventos, atividade recente, validação de demanda e desempenho por evento.
 - **Recomendações da IA:** resumo, destaques, recomendações priorizadas, eventos sugeridos e alertas, com um painel de transparência mostrando os dados enviados à IA.
+- **Exportar para o Miro:** a análise vira um frame no quadro da equipe (um frame novo a cada exportação, lado a lado), o que fecha o ciclo Inteligência → Novo planejamento.
 - **Eventos:** cadastro (em validação ou confirmado) com pré-visualização do celular.
 - **Detalhe do evento:** funil de participação, faixa etária, notas, melhorias, comentários e o QR Code de check-in.
 - **Ferramentas da demonstração:** simular +150 visitantes, simular a realização do evento e reiniciar os dados.
@@ -60,7 +63,8 @@ python manage.py runserver 0.0.0.0:8000
 5. No detalhe do evento, clique em **Simular +150 visitantes** para mostrar a escala.
 6. **O evento acontece:** escaneie o QR Code da tela com o celular → check-in confirmado (confete 🎉) → **avaliação**.
 7. **Recomendações da IA** → "Gerar nova análise". Destaque que a IA **não inventa números**: os indicadores são calculados pela aplicação e a IA apenas interpreta (abra o painel de transparência).
-8. Feche com o ciclo e a visão de SaaS.
+8. **Exportar para o Miro** → abra o quadro: "a recomendação já vira o planejamento da equipe".
+9. Feche com o ciclo e a visão de SaaS.
 
 > Dica: antes de apresentar, clique em **Reiniciar dados** na barra lateral.
 
@@ -80,7 +84,7 @@ apps/
   eventos/         área do visitante, repositório em memória, simulação, filtros de template
   participacao/    interesse, presença, check-in (QR + token), avaliação
   dashboard/       painel, métricas, cadastro de eventos, QR Code, ferramentas da demo
-  inteligencia/    Gemini + análise por regras (plano B)
+  inteligencia/    Gemini + análise por regras (plano B) + exportação para o Miro
 data/              eventos.json
 templates/         visitante/ e administrativo/
 static/            css/, js/ (main, swipe, painel), vendor/

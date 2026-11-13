@@ -48,8 +48,14 @@
         <div class="d-flex gap-2 align-items-center">
             <span class="ia-fonte" id="iaFonte">analisando…</span>
             <button class="btn btn-ia" id="btnIa"><i class="bi bi-arrow-repeat"></i> Gerar nova análise</button>
+            {% if miro_configurado %}
+            <button class="btn btn-ia btn-miro" id="btnMiro" disabled><i class="bi bi-kanban"></i> Exportar para o Miro</button>
+            {% else %}
+            <a class="btn btn-ia btn-miro" id="btnMiroCsv" href="{% url 'inteligencia:csv_miro' %}" title="Configure MIRO_ACCESS_TOKEN no .env para exportar direto para o quadro"><i class="bi bi-download"></i> Baixar para o Miro (CSV)</a>
+            {% endif %}
         </div>
     </div>
+    <div id="miroResultado" class="miro-resultado" hidden></div>
     <div id="iaConteudo">
         <div class="ia-carregando"><div class="spinner-border spinner-border-sm"></div> Interpretando os indicadores calculados pela plataforma…</div>
     </div>
@@ -98,6 +104,7 @@
     window.PAINEL = {
         urlDados: "{% url 'dashboard:dados' %}",
         urlIa: "{% url 'inteligencia:analise' %}",
+        urlMiro: "{% url 'inteligencia:exportar_miro' %}",
         urlEvento: "{% url 'dashboard:evento' 0 %}",
     };
 </script>
