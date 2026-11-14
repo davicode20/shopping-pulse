@@ -6,7 +6,7 @@ Plataforma de engajamento e análise de experiências para shopping centers. O v
 
 🌐 **Demo online:** https://shopping-pulse.onrender.com (o plano free do Render pode levar ~1 min para acordar no primeiro acesso)
 
-📄 **[Resumo do projeto para os avaliadores (1 página)](docs/ShoppDash-Resumo.pdf)** · **[Planejamento técnico inicial (1ª entrega)](docs/PLANEJAMENTO.md)** · **[Como rodar, passo a passo](COMO_RODAR.txt)**
+🎬 **[Vídeo de apresentação (90 s)](docs/pitch.mp4)** · 📄 **[Resumo do projeto para os avaliadores (1 página)](docs/ShoppDash-Resumo.pdf)** · **[Planejamento técnico inicial (1ª entrega)](docs/PLANEJAMENTO.md)** · **[Como rodar, passo a passo](COMO_RODAR.txt)**
 
 **Ciclo:** PLANEJAMENTO → ENGAJAMENTO → PARTICIPAÇÃO → AVALIAÇÃO → INTELIGÊNCIA → NOVO PLANEJAMENTO
 
