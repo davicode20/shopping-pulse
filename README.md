@@ -4,7 +4,9 @@
 
 Plataforma de engajamento e análise de experiências para shopping centers. O visitante usa uma área mobile (sem instalar app), e a administração conta com um painel de inteligência com indicadores ao vivo e recomendações geradas por IA.
 
-📄 **[Planejamento técnico inicial (1ª entrega)](docs/PLANEJAMENTO.md)**
+🌐 **Demo online:** https://shopping-pulse.onrender.com (o plano free do Render pode levar ~1 min para acordar no primeiro acesso)
+
+📄 **[Resumo do projeto para os avaliadores (1 página)](docs/ShoppDash-Resumo.pdf)** · **[Planejamento técnico inicial (1ª entrega)](docs/PLANEJAMENTO.md)** · **[Como rodar, passo a passo](COMO_RODAR.txt)**
 
 **Ciclo:** PLANEJAMENTO → ENGAJAMENTO → PARTICIPAÇÃO → AVALIAÇÃO → INTELIGÊNCIA → NOVO PLANEJAMENTO
 
@@ -106,7 +108,7 @@ Pontos importantes:
 > Dica: antes de apresentar, entre no painel, clique em **Reiniciar dados** na barra lateral e gere uma análise da IA.
 
 ## Decisões do protótipo
-- **Banco SQLite (D-004).** Eventos e interações ficam no banco, pelo ORM do Django (`apps/eventos/models.py`, `apps/eventos/repositorio.py`). Há uma interação por tipo e visitante por evento, exceto visualização. As sessões também ficam no banco, então o logout invalida a sessão no servidor.
+- **Banco SQLite (D-004).** Eventos e interações ficam no banco, pelo ORM do Django (`apps/eventos/models.py`, `apps/eventos/repositorio.py`). Há uma interação por tipo e visitante por evento, exceto visualização. As sessões ficam num cookie assinado, para o login sobreviver aos reinícios do servidor no Render.
 - **Dados simulados identificados.** A base histórica é gerada por `apps/eventos/simulacao.py` (semente fixa, sempre igual). Toda interação tem a flag `simulado`, e o painel mostra quantas interações são reais.
 - **Números calculados pela aplicação** (`apps/dashboard/metricas.py`). A IA só interpreta (`apps/inteligencia/servico.py`).
 - **IA com plano B:** se o Gemini não responder, as recomendações por regras usam os mesmos indicadores.
