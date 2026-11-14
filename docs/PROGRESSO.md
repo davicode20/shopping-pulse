@@ -47,6 +47,7 @@ Entregar um fluxo funcional de descoberta de eventos, manifestação de interess
 - [x] Revisar responsividade: páginas do visitante (início, descobrir, propostas, agenda, evento, conta, login) e administrativas (painel, evento, lista de eventos) sem rolagem horizontal da página e sem erro de JavaScript em 390 px e 1280 px, com login de administrador de teste
 - [ ] Ajustes visuais, fora do MVP final (desejável): tabela "Desempenho por evento" com colunas de comparecimento e satisfação fora da tela no celular; texto de investimento quebrado nos cartões de validação de demanda; espaço vazio no gráfico "Eventos com maior interesse" no desktop
 - [ ] Decidir se a taxa de comparecimento deve considerar check-ins sem interesse prévio (hoje ela pode passar de 100% em outros dados; nos dados de demonstração fica abaixo de 100%)
+- [ ] Easter Egg: validar no navegador real do celular (o teste usou Edge headless com relógio simulado); o olho foi posicionado por estimativa sobre o SVG do cavalo e o cavalo de perfil mostra só um olho
 - [ ] Atualizar `PLANEJAMENTO.md`, que ainda lista o login da administração como "Futura" e a persistência como "Futura"
 
 ## Próxima entrega sugerida
@@ -64,6 +65,7 @@ Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/
 | 2026-11-13 | Conta opcional de visitante, com vínculo das interações ao entrar | Equipe | `3de1202`; 41 testes passando |
 | 2026-11-14 | Aprovada a decisão D-006 (antiga P-002): autenticação e permissões nativas do Django para a área administrativa | Equipe | `DECISOES.md`; `5345b35` |
 | 2026-11-14 | Rebranding para ShoppDash: nome, ícone do app (topo, painel, login e favicon), cabeçalho com a imagem do cavalo e paleta do ícone (D-005) | Equipe | 41 testes passando; capturas em celular e desktop |
+| 2026-11-14 | Easter Egg "A Maldição do ShoppDash" na Home: 13 cliques no logotipo em até 5 s, overlay em 4 etapas (suspense, cavalo com olho vermelho, mensagem e botão), fechamento por botão, X ou Escape. Arquivos próprios `static/js/easter-egg.js` e `static/css/easter-egg.css`, carregados só na Home | Equipe | 41 testes do Django passando; 29 verificações no Edge headless (ativação, janela de 5 s, fechamento, foco, limpeza) e capturas em 390 px |
 
 ## Impedimentos e riscos
 - A base de demonstração é gerada na primeira execução (cerca de 16.600 interações simuladas). Gerar a base de novo ao reiniciar leva cerca de 0,7 segundo.

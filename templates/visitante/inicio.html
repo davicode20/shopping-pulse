@@ -1,6 +1,14 @@
 {% extends "visitante/base_visitante.html" %}
 {% load pulse static %}
 
+{% block head_extra %}
+<link href="{% static 'css/easter-egg.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/easter-egg.js' %}"></script>
+{% endblock %}
+
 {% block conteudo %}
 <section class="hero hero-escuro">
     <img class="hero-cavalo" src="{% static 'img/shoppdash-horse.png' %}" alt="" aria-hidden="true">
