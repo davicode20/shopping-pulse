@@ -21,6 +21,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.dashboard.acesso import destino_seguro
+from apps.eventos import repositorio as repo
 from apps.eventos.models import Interacao
 
 MAX_TENTATIVAS = 5
@@ -42,6 +43,7 @@ def _vincular_interacoes(anonimo, conta):
         # Mesmo tipo e evento já existente na conta: descarta a cópia anônima (a regra é uma por tipo).
         pendentes.exclude(tipo="visualizacao").filter(Exists(da_conta)).delete()
         pendentes.update(visitante=alvo)
+    repo.marcar_alteracao()
 
 
 def _manter_visitante(request, acao):

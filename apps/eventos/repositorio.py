@@ -89,6 +89,18 @@ _CAMPOS_EVENTO = [
 
 _trava = threading.RLock()
 _pronto = False
+# Versão dos dados: muda a cada escrita. As métricas do painel ficam em cache até ela mudar
+# (no Render free, recalcular tudo a cada 5 s saturava a CPU e derrubava o health check).
+_versao = [0]
+
+
+def versao():
+    return _versao[0]
+
+
+def marcar_alteracao():
+    """Chame depois de qualquer escrita em eventos/interações feita fora deste módulo."""
+    _versao[0] += 1
 
 
 # ---------- Conversões ----------
@@ -164,6 +176,7 @@ def _garantir():
             eventos = [_como_dict_evento(e) for e in Evento.objects.all()]
             _gravar_interacoes(gerar_base_simulada(eventos))
         _pronto = True
+        marcar_alteracao()
 
 
 def reiniciar():
@@ -173,6 +186,7 @@ def reiniciar():
         Interacao.objects.all().delete()
         Evento.objects.all().delete()
         _pronto = False
+        marcar_alteracao()
     _garantir()
 
 
@@ -219,6 +233,7 @@ def adicionar_evento(dados):
     _garantir()
     with _trava:
         evento = Evento.objects.create(**_campos_evento(dados))
+    marcar_alteracao()
     return _como_dict_evento(evento)
 
 
@@ -234,12 +249,15 @@ def registrar_interacao(tipo, evento_id, visitante, dados=None, momento=None, si
         # Um registro por tipo e visitante: se já existir, vale o mais recente.
         interacao, _ = Interacao.objects.update_or_create(
             tipo=tipo, evento_id=int(evento_id), visitante=visitante, defaults=campos)
+    marcar_alteracao()
     return _como_dict_interacao(interacao)
 
 
 def remover_interacao(tipo, evento_id, visitante):
     _garantir()
-    Interacao.objects.filter(tipo=tipo, evento_id=int(evento_id), visitante=visitante).delete()
+    apagadas, _ = Interacao.objects.filter(tipo=tipo, evento_id=int(evento_id), visitante=visitante).delete()
+    if apagadas:
+        marcar_alteracao()
 
 
 def existe_interacao(tipo, evento_id, visitante):

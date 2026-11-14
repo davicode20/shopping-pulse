@@ -4,6 +4,7 @@ Cálculo dos indicadores do painel.
 Regra do projeto: os números são calculados AQUI, pela aplicação.
 A IA apenas interpreta esses resultados (apps/inteligencia/servico.py).
 """
+import threading
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 
@@ -63,7 +64,30 @@ def metricas_por_evento():
     return resultado
 
 
+# Cache por versão dos dados (repo.versao()) e dia: o painel consulta a cada 5 s, mas só
+# recalcula quando algo muda. Antes, cada consulta lia ~16 mil interações três vezes, o que no
+# Render free levava segundos de CPU e derrubava o health check (502).
+_cache = {}
+_trava_cache = threading.RLock()  # reentrante: o payload chama calcular_indicadores()
+
+
+def _em_cache(nome, calcular):
+    chave = (repo.versao(), date.today())
+    with _trava_cache:
+        guardado = _cache.get(nome)
+        if guardado and guardado[0] == chave:
+            return guardado[1]
+        valor = calcular()
+        # a versão pode ter mudado durante o cálculo: guarda com a de antes (recalcula na próxima)
+        _cache[nome] = (chave, valor)
+        return valor
+
+
 def calcular_indicadores():
+    return _em_cache("indicadores", _calcular_indicadores)
+
+
+def _calcular_indicadores():
     """Indicadores gerais + por categoria + por evento (tudo serializável em JSON)."""
     por_evento = metricas_por_evento()
     interacoes = repo.listar_interacoes()
@@ -234,6 +258,10 @@ def atividade_recente(limite=8):
 
 def payload_painel():
     """Tudo o que o dashboard precisa (renderização inicial e atualização ao vivo)."""
+    return {**_em_cache("payload", _payload_painel), "atualizado_em": datetime.now().strftime("%H:%M:%S")}
+
+
+def _payload_painel():
     ind = calcular_indicadores()
     top = ind["eventos"][:8]
     cats = [c for c in ind["categorias"] if c["interessados"]]
