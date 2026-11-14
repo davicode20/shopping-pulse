@@ -9,7 +9,7 @@ services:
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     # O SQLite do plano free é apagado a cada deploy/reinício: recria as tabelas e o admin antes de subir.
     startCommand: python manage.py migrate --noinput && python manage.py admin_do_ambiente && gunicorn config.wsgi --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
-    healthCheckPath: /
+    healthCheckPath: /saude/
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.1"

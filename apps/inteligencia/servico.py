@@ -57,6 +57,9 @@ Indicadores:
 
 _cache = {"chave": None, "resultado": None}
 _trava = threading.Lock()
+# Uma geração por vez: quem chega durante uma geração (ex.: o painel abrindo enquanto o
+# pré-aquecimento roda) espera e reaproveita o resultado, em vez de chamar o Gemini de novo.
+_gerando = threading.Lock()
 
 
 # Formato obrigatório da resposta (enviado ao Gemini como schema e validado na volta)
@@ -247,18 +250,44 @@ def gerar_analise(indicadores, forcar=False):
         if not forcar and _cache["chave"] == chave:
             return _cache["resultado"]
 
-    resultado = None
-    if settings.GEMINI_API_KEY:
-        tentativa = _tentar_modelos(dados)
-        if tentativa:
-            resultado = {"fonte": "gemini", "modelo": tentativa[0], "analise": tentativa[1]}
-        else:
-            logger.error("Nenhum modelo do Gemini respondeu; usando análise por regras.")
-    if resultado is None:
-        resultado = {"fonte": "regras", "analise": analise_por_regras(indicadores)}
+    with _gerando:
+        with _trava:  # outra requisição pode ter gerado enquanto esperávamos
+            if not forcar and _cache["chave"] == chave:
+                return _cache["resultado"]
 
-    resultado["dados_enviados"] = dados
-    resultado["verificacao"] = verificar(resultado["analise"], dados)
-    with _trava:
-        _cache.update(chave=chave, resultado=resultado)
-    return resultado
+        resultado = None
+        if settings.GEMINI_API_KEY:
+            tentativa = _tentar_modelos(dados)
+            if tentativa:
+                resultado = {"fonte": "gemini", "modelo": tentativa[0], "analise": tentativa[1]}
+            else:
+                logger.error("Nenhum modelo do Gemini respondeu; usando análise por regras.")
+        if resultado is None:
+            resultado = {"fonte": "regras", "analise": analise_por_regras(indicadores)}
+
+        resultado["dados_enviados"] = dados
+        resultado["verificacao"] = verificar(resultado["analise"], dados)
+        with _trava:
+            _cache.update(chave=chave, resultado=resultado)
+        return resultado
+
+
+def pre_aquecer():
+    """
+    Gera a análise em segundo plano assim que o servidor sobe (chamado pelo config/wsgi.py).
+    No Render free o cache em memória some a cada reinício; sem isto, o primeiro acesso ao
+    painel esperava ~30 s pelo Gemini. Falhas só vão para o log: o painel gera sob demanda.
+    """
+    def tarefa():
+        from django.db import connection
+
+        from apps.dashboard.metricas import calcular_indicadores
+        try:
+            resultado = gerar_analise(calcular_indicadores())
+            logger.info("Análise pré-gerada na inicialização (fonte: %s).", resultado.get("fonte"))
+        except Exception:
+            logger.exception("Falha ao pré-gerar a análise; o painel vai gerar sob demanda.")
+        finally:
+            connection.close()
+
+    threading.Thread(target=tarefa, name="pre-aquecer-analise", daemon=True).start()

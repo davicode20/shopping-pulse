@@ -71,7 +71,7 @@ class AcessoAdministrativoTests(TestCase):
 
     # --- logout ---
 
-    def test_logout_encerra_a_sessao_no_servidor(self):
+    def test_logout_encerra_a_sessao(self):
         self.entrar("admin-teste")
         self.client.post(reverse("dashboard:logout"))
         self.assertEqual(self.client.get(reverse("dashboard:painel")).status_code, 302)

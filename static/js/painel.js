@@ -180,9 +180,17 @@
         location.href = (urlLogin || "/painel/entrar/") + "?proximo=" + encodeURIComponent(location.pathname);
         return new Promise(() => {}); // interrompe quem chamou enquanto a página troca
     }
+    // Resposta vazia ou não-JSON = o servidor caiu/reiniciou no meio (ex.: deploy no Render)
+    async function lerJson(resposta) {
+        try {
+            return await resposta.json();
+        } catch (err) {
+            throw new Error("O servidor não respondeu (pode estar reiniciando). Aguarde alguns segundos e tente de novo.");
+        }
+    }
     async function buscarJson(url) {
         const resposta = await fetch(url, { headers: { "X-Requested-With": "fetch" } });
-        const dados = await resposta.json();
+        const dados = await lerJson(resposta);
         if (resposta.status === 401) return irParaLogin(dados.login);
         return dados;
     }
@@ -268,7 +276,7 @@
                 method: "POST",
                 headers: { "X-CSRFToken": obterCsrfToken(), "X-Requested-With": "fetch" },
             });
-            const r = await resposta.json();
+            const r = await lerJson(resposta);
             if (resposta.status === 401) return irParaLogin(r.login);
             if (!r.ok) throw new Error(r.erro || "Falha ao exportar.");
             caixa.className = "miro-resultado ok";

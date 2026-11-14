@@ -98,6 +98,11 @@ DATABASES = {
     }
 }
 SESSION_COOKIE_AGE = 12 * 3600  # o login do administrador vale por 12 horas
+# Sessão em cookie assinado (com a SECRET_KEY), não no banco: no Render free o SQLite é recriado a cada
+# reinício/deploy, e a sessão no banco derrubava o login. O admin é recriado na inicialização com o mesmo
+# usuário e hash de senha, então o cookie continua válido. Troca: o logout apaga o cookie no navegador,
+# mas não há como invalidar no servidor um cookie copiado antes (aceitável para o protótipo).
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
 LANGUAGE_CODE = "pt-br"
