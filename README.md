@@ -62,11 +62,12 @@ Para expor a demo fora da rede local (ex.: ngrok), use `DJANGO_DEBUG=False` e um
 O projeto está pronto para o **Render** (`render.yaml` na raiz):
 
 1. Em [render.com](https://render.com), entre com o GitHub → **New → Blueprint** → escolha este repositório.
-2. Preencha as variáveis pedidas: `ADMIN_USUARIO`, `ADMIN_SENHA_HASH` (copie do seu `.env` depois de rodar `python manage.py definir_admin`), `GEMINI_API_KEY`, `MIRO_ACCESS_TOKEN` e `MIRO_BOARD_ID`.
+2. Preencha as variáveis pedidas: `ADMIN_USUARIO`, `ADMIN_SENHA_HASH` (gere com `python manage.py definir_admin --hash`; o admin é recriado a partir dessas duas variáveis a cada inicialização), `GEMINI_API_KEY`, `MIRO_ACCESS_TOKEN` e `MIRO_BOARD_ID`.
 3. **Apply**. Em alguns minutos o sistema fica em `https://shopping-pulse.onrender.com` (ou nome parecido).
 
 Pontos importantes:
-- **Um processo só** (`--workers 1`): os dados ficam em memória; com mais processos, cada um teria seus próprios votos.
+- **Sem banco externo:** os dados ficam num SQLite local, recriado a cada deploy ou reinício (volta à base simulada). O login do painel sobrevive, porque a sessão fica num cookie assinado. Um processo só (`--workers 1`), pois o cache da análise da IA fica em memória.
+- **IA pronta ao subir:** a análise é gerada em segundo plano assim que o servidor inicia, para o painel não esperar o Gemini no primeiro acesso.
 - **Plano free:** o serviço dorme após 15 min sem acesso; o primeiro acesso depois disso leva cerca de 1 min e os dados voltam ao estado inicial (base simulada). Para a apresentação, use o plano Starter ou abra o link alguns minutos antes.
 - Em produção (`DJANGO_DEBUG=False`) o WhiteNoise serve CSS/JS, os cookies só trafegam por HTTPS e o endereço público entra sozinho em `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS`.
 
@@ -111,7 +112,7 @@ Pontos importantes:
 - **IA com plano B:** se o Gemini não responder, as recomendações por regras usam os mesmos indicadores.
 - **Bibliotecas locais** em `static/vendor/` (Bootstrap, Icons, Chart.js): a demo não depende da internet do evento. Só a fonte Poppins vem do Google Fonts, com fallback para a fonte do sistema.
 - **Nome configurável:** altere `NOME_PROJETO` no `.env` (Circulaê, Nexora, Vibraê...).
-- **Login pelo `django.contrib.auth`.** Administradores são usuários com `is_staff`, criados com `definir_admin` (`apps/dashboard/acesso.py`). Sessão de 12 h no banco, bloqueio após 5 tentativas erradas e "Gerar nova análise" limitado a uma chamada a cada 15 s. As views usam o decorator `@admin_requerido`. Visitantes têm conta própria (`apps/participacao/contas.py`), sem acesso ao painel.
+- **Login pelo `django.contrib.auth`.** Administradores são usuários com `is_staff`, criados com `definir_admin` (`apps/dashboard/acesso.py`). Sessão de 12 h em cookie assinado, bloqueio após 5 tentativas erradas e "Gerar nova análise" limitado a uma chamada a cada 15 s. As views usam o decorator `@admin_requerido`. Visitantes têm conta própria (`apps/participacao/contas.py`), sem acesso ao painel.
 
 ## Estrutura
 ```

@@ -1,6 +1,6 @@
 # Deploy no Render (render.com): New → Blueprint → escolha este repositório.
-# IMPORTANTE: os dados ficam em memória, então o serviço precisa rodar em UM processo (--workers 1).
-# Com mais de um processo, cada um teria seus próprios votos e o painel ficaria inconsistente.
+# Protótipo sem banco externo: SQLite local, recriado a cada deploy/reinício (volta à base simulada).
+# UM processo (--workers 1): o cache da análise da IA fica na memória do processo.
 services:
   - type: web
     name: shopping-pulse
