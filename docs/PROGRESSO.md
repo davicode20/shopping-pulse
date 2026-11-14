@@ -28,8 +28,8 @@ Entregar um fluxo funcional de descoberta de eventos, manifestação de interess
 - [x] Todas as views administrativas (painel, dados, eventos, QR Code, simulação, reinício, análise da IA e exportação) exigem login no backend
 - [x] Logout só por POST, e preserva o identificador do visitante anônimo
 - [x] 13 testes de acesso em `apps/dashboard/tests.py`, todos passando
-- [ ] Ainda não há administrador no banco de desenvolvimento: rodar `python manage.py definir_admin`
-- [ ] Decisão P-002 (autenticação nativa do Django) aguarda confirmação da equipe no `DECISOES.md`
+- [x] Administrador criado no banco de desenvolvimento com `python manage.py definir_admin`
+- [x] Decisão P-002 aprovada em 2026-11-14 como D-006 (autenticação nativa do Django) no `DECISOES.md`
 
 ### Rebranding ShoppDash (D-005, 2026-11-14)
 - [x] Nome exibido alterado para ShoppDash (`NOME_PROJETO`, títulos, README e documentos)
@@ -41,12 +41,16 @@ Entregar um fluxo funcional de descoberta de eventos, manifestação de interess
 ## Pendências prioritárias
 - [x] Validar o fluxo completo no navegador: visitante (interesse, check-in por QR, avaliação) e administrador (login, simulação, painel, logout) — 18 de 18 verificações passaram
 - [x] Criar testes automatizados dos fluxos de persistência e participação (29 testes no total, `b5451cb`)
-- [ ] Validar indicadores e integração com IA
-- [ ] Revisar usabilidade e responsividade
+- [x] Validar indicadores: contagens por evento conferidas com consulta direta ao banco (12 eventos, sem divergência); 41 testes passando
+- [x] Validar fallback de IA por regras: 21 números citados, todos conferidos com os dados; número inventado simulado na resposta do Gemini foi marcado como "não encontrado"
+- [ ] Validar a integração real com o Gemini: `GEMINI_API_KEY` não está configurada neste ambiente, então a chamada real não foi testada
+- [x] Revisar responsividade: páginas do visitante (início, descobrir, propostas, agenda, evento, conta, login) e administrativas (painel, evento, lista de eventos) sem rolagem horizontal da página e sem erro de JavaScript em 390 px e 1280 px, com login de administrador de teste
+- [ ] Ajustes visuais, fora do MVP final (desejável): tabela "Desempenho por evento" com colunas de comparecimento e satisfação fora da tela no celular; texto de investimento quebrado nos cartões de validação de demanda; espaço vazio no gráfico "Eventos com maior interesse" no desktop
+- [ ] Decidir se a taxa de comparecimento deve considerar check-ins sem interesse prévio (hoje ela pode passar de 100% em outros dados; nos dados de demonstração fica abaixo de 100%)
 - [ ] Atualizar `PLANEJAMENTO.md`, que ainda lista o login da administração como "Futura" e a persistência como "Futura"
 
 ## Próxima entrega sugerida
-Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/sqlite-auth` na `main`. Decidir sobre o login de visitantes e confirmar a decisão P-002.
+Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/sqlite-auth` na `main`. Decidir sobre o login de visitantes. A decisão P-002 já foi aprovada (D-006). Nenhuma branch foi mesclada.
 
 ## Registro de atualizações
 | Data | Alteração | Responsável | Evidência |
@@ -58,6 +62,7 @@ Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/
 | 2026-11-13 | Testes de participação, persistência e leitura pelo painel | Equipe | `b5451cb`; 29 testes passando |
 | 2026-11-13 | Validação no navegador (Chrome, Playwright) dos fluxos de visitante e administrador | Equipe | 18 de 18 verificações; banco de desenvolvimento restaurado depois |
 | 2026-11-13 | Conta opcional de visitante, com vínculo das interações ao entrar | Equipe | `3de1202`; 41 testes passando |
+| 2026-11-14 | Aprovada a decisão D-006 (antiga P-002): autenticação e permissões nativas do Django para a área administrativa | Equipe | `DECISOES.md`; `5345b35` |
 | 2026-11-14 | Rebranding para ShoppDash: nome, ícone do app (topo, painel, login e favicon), cabeçalho com a imagem do cavalo e paleta do ícone (D-005) | Equipe | 41 testes passando; capturas em celular e desktop |
 
 ## Impedimentos e riscos
