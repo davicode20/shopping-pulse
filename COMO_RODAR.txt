@@ -1,0 +1,188 @@
+SHOPPDASH (Shopping Pulse) - COMO BAIXAR, RODAR E USAR
+========================================================
+
+Este guia leva você do zero até o sistema funcionando no seu computador:
+a área do visitante (celular), o painel administrativo e a análise da IA.
+
+O que você precisa antes de começar
+-----------------------------------
+1. Git - para baixar o projeto.        https://git-scm.com/downloads
+2. Python 3.11 ou mais novo.           https://www.python.org/downloads/
+   (No Windows, marque a opção "Add python.exe to PATH" na instalação.)
+3. Um editor de texto (opcional), para editar o arquivo .env.
+4. (Opcional) Chave do Google Gemini, para a IA real.
+   Sem ela, o sistema usa o "modo demonstração" e funciona do mesmo jeito.
+
+Os comandos abaixo são para Windows (PowerShell ou Prompt de Comando).
+Em macOS/Linux, troque "python" por "python3" e "\" por "/",
+e ative o ambiente com "source .venv/bin/activate" em vez de ".venv\Scripts\activate".
+
+
+PASSO 1 - Baixar o projeto do GitHub
+------------------------------------
+Abra um terminal na pasta onde quer guardar o projeto e rode:
+
+    git clone https://github.com/davicode20/shopping-pulse.git
+    cd shopping-pulse
+
+(Se o repositório tiver sido renomeado, o GitHub redireciona o endereço
+antigo; se não funcionar, peça o endereço atual à equipe.)
+
+
+PASSO 2 - Criar o ambiente virtual e instalar as dependências
+-------------------------------------------------------------
+O ambiente virtual (.venv) guarda as bibliotecas só deste projeto.
+
+    python -m venv .venv
+    .venv\Scripts\activate
+    python -m pip install -r requirements.txt
+
+Quando o ambiente estiver ativo, o início da linha do terminal mostra "(.venv)".
+As bibliotecas instaladas são: Django, python-dotenv, qrcode (com Pillow),
+google-genai, gunicorn e whitenoise.
+
+Se aparecer "No module named ..." mais tarde, rode de novo o comando
+"python -m pip install -r requirements.txt" com o ambiente ativado.
+
+
+PASSO 3 - Criar o arquivo de configuração (.env)
+------------------------------------------------
+O arquivo .env NÃO vem do GitHub (é de propósito, para não expor chaves).
+Crie-o a partir do modelo:
+
+    copy .env.example .env
+
+Abra o arquivo .env em um editor e confira:
+
+  - DJANGO_SECRET_KEY: troque o valor de exemplo por uma chave própria.
+    Para gerar uma:
+
+        python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"
+
+    Cole o resultado no lugar de "troque-esta-chave".
+
+  - GEMINI_API_KEY: opcional. Se quiser a IA real, gere uma chave em
+    https://aistudio.google.com/apikey e cole aqui. Se deixar vazio,
+    o painel usa o modo demonstração.
+
+  - MIRO_ACCESS_TOKEN e MIRO_BOARD_ID: opcionais. Só são necessários para o
+    botão "Exportar para o Miro". Sem eles, o botão vira "Baixar CSV".
+
+Os demais valores podem ficar como estão.
+
+
+PASSO 4 - Criar o banco de dados
+--------------------------------
+    python manage.py migrate
+
+Isso cria o arquivo db.sqlite3 na pasta do projeto. Na primeira execução,
+o sistema também gera a base de eventos simulada. Este passo é obrigatório:
+sem ele, o login e as páginas dão erro "no such table".
+
+
+PASSO 5 - Criar o administrador do painel
+-----------------------------------------
+    python manage.py definir_admin
+
+O comando pergunta o nome de usuário e a senha (duas vezes, para confirmar).
+Guarde essas informações: elas são o login do painel /painel/.
+Para trocar a senha depois, rode o mesmo comando de novo com o mesmo usuário.
+
+
+PASSO 6 - Ligar o servidor
+--------------------------
+    python manage.py runserver 0.0.0.0:8000
+
+Deixe esse terminal aberto. Para desligar o sistema, pressione Ctrl + C.
+
+Se aparecer "Address already in use" (porta ocupada), use outra porta:
+
+    python manage.py runserver 8001
+
+Se a porta estiver presa por um servidor antigo, veja o PID com
+"netstat -ano | findstr :8000" e encerre com "taskkill /PID <número> /F".
+
+
+PASSO 7 - Acessar o sistema
+---------------------------
+  Visitante (celular ou navegador):   http://127.0.0.1:8000/
+  Painel administrativo (com login):  http://127.0.0.1:8000/painel/
+  Análise da IA (JSON):               http://127.0.0.1:8000/inteligencia/analise/
+
+Para testar pelo celular na mesma rede Wi-Fi, acesse http://IP-DO-PC:8000/
+(descubra o IP do computador com "ipconfig"). O QR Code de check-in
+já usa esse endereço automaticamente.
+
+
+COMO USAR A ÁREA DO VISITANTE
+-----------------------------
+Não precisa de login.
+  - Início: próximos eventos e filtro por categoria.
+  - Descobrir: cartões estilo swipe (arraste para a direita = quero;
+    para a esquerda = passo). No computador, use as setas ← → do teclado.
+  - Ajude a decidir: votação em ideias de eventos ainda não confirmados.
+  - Detalhe do evento: "Tenho interesse" e "Pretendo ir".
+  - Check-in: pelo QR Code do evento (link com token).
+  - Avaliação: liberada depois do check-in (estrelas e comentário).
+  - Minha agenda: interesses, experiências e recomendações.
+  - Conta (ícone de pessoa no topo, em /participacao/conta/): opcional.
+    Criar uma conta ou entrar mantém as interações feitas no navegador.
+
+
+COMO USAR O PAINEL ADMINISTRATIVO
+---------------------------------
+1. Acesse http://127.0.0.1:8000/painel/ e entre com o usuário e a senha
+   criados no PASSO 5.
+2. O painel atualiza sozinho a cada 5 segundos. Mostra indicadores,
+   gráficos, top eventos, atividade recente e validação de demanda.
+3. Eventos: cadastre novos eventos (em validação ou confirmados) e veja
+   o detalhe de cada um, com funil de participação, avaliações e QR Code.
+4. Recomendações da IA: "Gerar nova análise" gera o resumo, as recomendações
+   e os eventos sugeridos. Leva cerca de 20 segundos. O painel de transparência
+   mostra os dados enviados à IA e confere cada número citado.
+5. Exportar para o Miro: cria um frame com a análise no quadro (exige token).
+6. Ferramentas da demonstração (barra lateral):
+   - Simular +150 visitantes (no detalhe do evento).
+   - Simular a realização do evento.
+   - Reiniciar dados: volta à base simulada original.
+   - Para atualizar só os eventos a partir de data/eventos.json, sem apagar
+     nada, rode: python manage.py carregar_eventos
+7. Para sair, use o botão de sair da barra lateral.
+
+
+PROBLEMAS COMUNS
+----------------
+- "ModuleNotFoundError: No module named ..."
+    O ambiente virtual não está ativo, ou faltam dependências.
+    Ative com ".venv\Scripts\activate" e rode "python -m pip install -r requirements.txt".
+
+- "no such table" ao entrar
+    Falta o migrate. Rode "python manage.py migrate".
+
+- /painel/ abre sem pedir senha, ou /participacao/conta/ dá 404
+    Outro servidor antigo está na porta 8000. Encerre-o (veja o PASSO 6)
+    ou use outra porta.
+
+- "Sessão expirada" ou erro de login
+    Confira se o administrador foi criado (PASSO 5). Depois de 5 senhas
+    erradas seguidas, o login fica bloqueado por 5 minutos.
+
+- A IA mostra "modo demonstração"
+    Normal sem GEMINI_API_KEY. Com a chave, verifique se ela está no .env e
+    se não há erro de conexão.
+
+
+ATUALIZAR O PROJETO QUANDO A EQUIPE MUDAR O CÓDIGO
+--------------------------------------------------
+    git pull
+    python -m pip install -r requirements.txt
+    python manage.py migrate
+    python manage.py runserver 0.0.0.0:8000
+
+
+OBSERVAÇÕES
+-----------
+- O .env e o db.sqlite3 não vão para o GitHub. Cada pessoa tem os seus.
+- Os dados de demonstração são simulados e aparecem identificados como tal.
+- Para o deploy público (Render), veja a seção "Deploy" do README.md.
+- Para mais detalhes técnicos, leia README.md e a pasta docs/.
