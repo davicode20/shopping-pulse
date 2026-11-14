@@ -1,4 +1,4 @@
-# Decisões Técnicas — Shopping Pulse
+# Decisões Técnicas — ShoppDash
 
 > Registre decisões aprovadas pela equipe. Diferencie decisões confirmadas de propostas.
 
@@ -12,6 +12,7 @@ Plataforma para divulgar e validar o interesse por eventos de shopping, coletar 
 | D-002 | Separar responsabilidades em módulos de eventos, participação, dashboard e inteligência | Implementada | Organização do código |
 | D-003 | Disponibilizar uma experiência web para visitantes e administração | Implementada inicialmente | Facilitar acesso e demonstração |
 | D-004 | Usar SQLite como banco de dados do MVP, com Django ORM e migrations | Aprovada em 2026-11-13 | Simplicidade de configuração e persistência entre reinícios (ver P-001) |
+| D-005 | Renomear o produto para ShoppDash (shopping + Rapidash, nome do grupo no evento) e adotar a paleta do ícone do app (âmbar, laranja e café) | Aprovada em 2026-11-14 | Identidade do grupo no Hackathon; ícone e imagem do cabeçalho fornecidos pela equipe. A pasta e os nomes técnicos (`shopping-pulse`, classes `btn-pulse`, `templatetags/pulse`) foram mantidos |
 
 ### D-004 — Usar SQLite como banco de dados do MVP
 - **Data:** 2026-11-13

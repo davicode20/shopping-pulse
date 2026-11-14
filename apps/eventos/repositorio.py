@@ -1,5 +1,5 @@
 """
-Camada de dados do Shopping Pulse (SQLite via Django ORM, decisão D-004).
+Camada de dados do ShoppDash (SQLite via Django ORM, decisão D-004).
 
 - Eventos: gravados na tabela Evento. Na primeira execução, são carregados de data/eventos.json.
 - Interações (visualização, interesse, check-in, avaliação...): gravadas na tabela Interacao.

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static pulse %}
 
 {% block body_class %}area-visitante{% endblock %}
 
@@ -6,8 +7,10 @@
 <div class="app-shell">
     {% block topbar %}
     <header class="topbar">
-        <a class="logo" href="{% url 'eventos:inicio' %}">
-            <span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}
+        <a class="logo marca" href="{% url 'eventos:inicio' %}">
+            <span class="logo-app">{% include "_cavalo.html" %}</span>
+            <span class="marca-sep" aria-hidden="true"></span>
+            <span class="marca-nome">{{ NOME_PROJETO|marca }}</span>
         </a>
         <a class="acao" href="{% url 'participacao:conta' %}" aria-label="Minha conta"><i class="bi bi-person-circle"></i></a>
     </header>
@@ -18,7 +21,7 @@
     <nav class="tabbar">
         <a href="{% url 'eventos:inicio' %}" class="{% if aba == 'inicio' %}ativo{% endif %}"><i class="bi bi-house-door{% if aba == 'inicio' %}-fill{% endif %}"></i>Início</a>
         <a href="{% url 'eventos:propostas' %}" class="{% if aba == 'propostas' %}ativo{% endif %}"><i class="bi bi-hand-thumbs-up{% if aba == 'propostas' %}-fill{% endif %}"></i>Ajude a decidir</a>
-        <a href="{% url 'eventos:descobrir' %}" class="tab-central {% if aba == 'descobrir' %}ativo{% endif %}"><i class="bi bi-fire"></i>Descobrir</a>
+        <a href="{% url 'eventos:descobrir' %}" class="tab-central {% if aba == 'descobrir' %}ativo{% endif %}"><i class="cavalo-tab" aria-hidden="true">{% include "_cavalo.html" %}</i>Descobrir</a>
         <a href="{% url 'eventos:agenda' %}" class="{% if aba == 'agenda' %}ativo{% endif %}"><i class="bi bi-calendar-heart{% if aba == 'agenda' %}-fill{% endif %}"></i>Minha agenda</a>
     </nav>
 </div>

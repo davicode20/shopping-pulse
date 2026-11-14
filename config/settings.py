@@ -1,5 +1,5 @@
 """
-Configurações do Shopping Pulse (protótipo — Hackarun Palmas).
+Configurações do ShoppDash (protótipo — Hackarun Palmas).
 
 Persistência: SQLite (decisão D-004 em docs/DECISOES.md).
 - O arquivo db.sqlite3 fica na raiz do projeto e está fora do Git.
@@ -99,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Projeto
 DATA_DIR = BASE_DIR / "data"
-NOME_PROJETO = os.getenv("NOME_PROJETO", "Shopping Pulse")
+NOME_PROJETO = os.getenv("NOME_PROJETO", "ShoppDash")
 SLOGAN_PROJETO = "Transformando preferências em experiências."
 
 # Inteligência artificial (Gemini). Sem chave => modo demonstração com análises prontas.

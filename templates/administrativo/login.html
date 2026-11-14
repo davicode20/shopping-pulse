@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block titulo %}Entrar · {{ NOME_PROJETO }}{% endblock %}
 {% block body_class %}area-login{% endblock %}
@@ -6,7 +7,7 @@
 {% block corpo %}
 <main class="login-tela">
     <div class="login-card">
-        <a class="logo logo-escuro mb-4" href="{% url 'eventos:inicio' %}"><span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}</a>
+        <a class="logo logo-escuro mb-4" href="{% url 'eventos:inicio' %}"><span class="logo-app">{% include "_cavalo.html" %}</span> {{ NOME_PROJETO }}</a>
         <h1 class="h4 mb-1">Painel de inteligência</h1>
         <p class="text-2 small mb-4">Área da administração do shopping. Entre para ver os indicadores e as recomendações.</p>
 

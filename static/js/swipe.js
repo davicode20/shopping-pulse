@@ -16,7 +16,8 @@
             else c.style.transform = "";
             c.style.pointerEvents = i === 0 ? "auto" : "none";
         });
-        document.getElementById("restantes").textContent = lista.length;
+        const restantes = document.getElementById("restantes"); // o contador é opcional na tela
+        if (restantes) restantes.textContent = lista.length;
         if (!lista.length) {
             document.getElementById("deckVazio").hidden = false;
             document.getElementById("deckAcoes").hidden = true;

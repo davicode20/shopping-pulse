@@ -33,3 +33,17 @@ def porcentagem_de(parte, total):
         return round(min(100, float(parte) / float(total) * 100), 1) if float(total) else 0
     except (TypeError, ValueError):
         return 0
+
+
+@register.filter
+def marca(nome):
+    """'ShoppDash' -> 'Shopp<em>Dash</em>': a última palavra com inicial maiúscula fica em destaque."""
+    import re
+    from django.utils.html import escape
+    from django.utils.safestring import mark_safe
+
+    texto = str(nome or "")
+    partes = re.split(r"(?<=[a-zà-ú])(?=[A-ZÀ-Ú])", texto)
+    if len(partes) < 2:
+        return escape(texto)
+    return mark_safe(escape("".join(partes[:-1])) + "<em>" + escape(partes[-1]) + "</em>")

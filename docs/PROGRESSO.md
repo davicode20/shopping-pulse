@@ -1,4 +1,4 @@
-# Progresso do Projeto Shopping Pulse
+# Progresso do Projeto ShoppDash
 
 > Documento de acompanhamento. Atualize conforme as entregas forem verificadas.
 
@@ -31,6 +31,13 @@ Entregar um fluxo funcional de descoberta de eventos, manifestação de interess
 - [ ] Ainda não há administrador no banco de desenvolvimento: rodar `python manage.py definir_admin`
 - [ ] Decisão P-002 (autenticação nativa do Django) aguarda confirmação da equipe no `DECISOES.md`
 
+### Rebranding ShoppDash (D-005, 2026-11-14)
+- [x] Nome exibido alterado para ShoppDash (`NOME_PROJETO`, títulos, README e documentos)
+- [x] Ícone do app no topo, no painel, no login e como favicon
+- [x] Cabeçalho do visitante (início, ajude a decidir, agenda) com a imagem do cavalo ao fundo
+- [x] Paleta de dourado para âmbar, laranja e café, inclusive gráficos do painel
+- [ ] Validar o cabeçalho em aparelho real (a captura foi feita no Chrome, com viewport de 390 px)
+
 ## Pendências prioritárias
 - [x] Validar o fluxo completo no navegador: visitante (interesse, check-in por QR, avaliação) e administrador (login, simulação, painel, logout) — 18 de 18 verificações passaram
 - [x] Criar testes automatizados dos fluxos de persistência e participação (29 testes no total, `b5451cb`)
@@ -51,6 +58,7 @@ Revisão final (Etapa 6): revisar o código e os commits antes de mesclar `feat/
 | 2026-11-13 | Testes de participação, persistência e leitura pelo painel | Equipe | `b5451cb`; 29 testes passando |
 | 2026-11-13 | Validação no navegador (Chrome, Playwright) dos fluxos de visitante e administrador | Equipe | 18 de 18 verificações; banco de desenvolvimento restaurado depois |
 | 2026-11-13 | Conta opcional de visitante, com vínculo das interações ao entrar | Equipe | `3de1202`; 41 testes passando |
+| 2026-11-14 | Rebranding para ShoppDash: nome, ícone do app (topo, painel, login e favicon), cabeçalho com a imagem do cavalo e paleta do ícone (D-005) | Equipe | 41 testes passando; capturas em celular e desktop |
 
 ## Impedimentos e riscos
 - A base de demonstração é gerada na primeira execução (cerca de 16.600 interações simuladas). Gerar a base de novo ao reiniciar leva cerca de 0,7 segundo.

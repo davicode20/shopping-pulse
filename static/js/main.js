@@ -1,4 +1,4 @@
-// Shopping Pulse — scripts compartilhados entre visitante e painel.
+// ShoppDash — scripts compartilhados entre visitante e painel.
 
 function obterCsrfToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -62,7 +62,7 @@ function formatarNumero(valor, casas = 0) {
 }
 
 function confete(quantidade = 70) {
-    const cores = ["#c79747", "#e3c58f", "#b07f32", "#f3ebde", "#8c6624", "#ffffff"];
+    const cores = ["#e8870f", "#ffc46b", "#c4620c", "#fbefe2", "#b4530a", "#ffffff"];
     for (let i = 0; i < quantidade; i++) {
         const c = document.createElement("div");
         c.className = "confete";
@@ -136,3 +136,106 @@ document.addEventListener("click", (e) => {
         history.back();
     }
 });
+
+// Carrosséis horizontais (.carrossel): bolinhas de posição, setas no desktop e arrastar com o mouse.
+// No celular o deslizar com o dedo continua nativo; o JS só acrescenta o que faltava.
+function iniciarCarrossel(el) {
+    const cards = Array.from(el.children);
+    if (cards.length < 2) return;
+
+    const area = document.createElement("div");
+    area.className = "carrossel-area";
+    el.parentNode.insertBefore(area, el);
+    area.appendChild(el);
+    // Links e imagens dentro do carrossel não podem iniciar o "arrastar" nativo do navegador,
+    // que cancela os eventos do mouse e impede o arrasto do carrossel
+    el.querySelectorAll("a, img").forEach(n => { n.draggable = false; });
+    el.addEventListener("dragstart", e => e.preventDefault());
+
+    const passo = () => cards[1].offsetLeft - cards[0].offsetLeft;
+    // Rolagem instantânea: o snap do CSS encaixa o card certo em qualquer navegador
+    const irPara = i => el.scrollTo({ left: cards[i].offsetLeft - cards[0].offsetLeft });
+
+    const pontos = document.createElement("div");
+    pontos.className = "carrossel-pontos";
+    const bolinhas = cards.map((_, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("aria-label", `Ir para o item ${i + 1}`);
+        b.addEventListener("click", () => irPara(i));
+        pontos.appendChild(b);
+        return b;
+    });
+    area.appendChild(pontos);
+
+    const criarSeta = (classe, rotulo, icone) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = `carrossel-seta ${classe}`;
+        b.setAttribute("aria-label", rotulo);
+        b.innerHTML = `<i class="bi ${icone}"></i>`;
+        area.appendChild(b);
+        return b;
+    };
+    const anterior = criarSeta("anterior", "Anterior", "bi-chevron-left");
+    const proximo = criarSeta("proximo", "Próximo", "bi-chevron-right");
+    anterior.addEventListener("click", () => el.scrollBy({ left: -passo() }));
+    proximo.addEventListener("click", () => el.scrollBy({ left: passo() }));
+
+    const atualizar = () => {
+        const max = el.scrollWidth - el.clientWidth;
+        const i = Math.min(cards.length - 1, Math.max(0, Math.round(el.scrollLeft / passo())));
+        bolinhas.forEach((b, k) => b.classList.toggle("ativo", k === i));
+        anterior.disabled = el.scrollLeft <= 4;
+        proximo.disabled = el.scrollLeft >= max - 4;
+    };
+    el.addEventListener("scroll", atualizar, { passive: true });
+    window.addEventListener("resize", atualizar);
+    atualizar();
+
+    // Arrastar com o mouse (toque continua nativo)
+    let x0 = 0, sl0 = 0, arrastando = false, moveu = false;
+    el.addEventListener("pointerdown", e => {
+        if (e.pointerType !== "mouse" || e.button !== 0) return;
+        arrastando = true; moveu = false; x0 = e.clientX; sl0 = el.scrollLeft;
+        el.classList.add("arrastando");
+    });
+    el.addEventListener("pointermove", e => {
+        if (!arrastando) return;
+        const dx = e.clientX - x0;
+        if (Math.abs(dx) > 5) moveu = true;
+        el.scrollLeft = sl0 - dx;
+    });
+    const soltar = () => {
+        if (!arrastando) return;
+        arrastando = false;
+        el.classList.remove("arrastando");
+    };
+    el.addEventListener("pointerup", soltar);
+    el.addEventListener("pointerleave", soltar);
+    el.addEventListener("pointercancel", soltar);
+    // Depois de arrastar, o clique que sobra não deve abrir o card
+    el.addEventListener("click", e => {
+        if (moveu) { e.preventDefault(); e.stopPropagation(); moveu = false; }
+    }, true);
+}
+
+document.querySelectorAll(".carrossel").forEach(iniciarCarrossel);
+
+// Menu lateral do painel: destaca a seção que está na tela (Painel, Recomendações da IA ou Validação de demanda)
+function iniciarMenuAdmin() {
+    const links = Array.from(document.querySelectorAll(".sidebar nav a[data-spy]"));
+    const ia = document.getElementById("ia");
+    const demanda = document.getElementById("demanda");
+    if (!links.length || !ia || !demanda) return; // só existe na tela do painel
+    const marcar = () => {
+        const limite = 140; // altura em que a seção já está "em foco" no topo da tela
+        let ativo = "topo";
+        if (demanda.getBoundingClientRect().top <= limite) ativo = "demanda";
+        else if (ia.getBoundingClientRect().top <= limite) ativo = "ia";
+        links.forEach(a => a.classList.toggle("ativo", a.dataset.spy === ativo));
+    };
+    window.addEventListener("scroll", marcar, { passive: true });
+    marcar();
+}
+iniciarMenuAdmin();

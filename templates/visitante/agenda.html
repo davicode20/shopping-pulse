@@ -1,8 +1,10 @@
 {% extends "visitante/base_visitante.html" %}
-{% load pulse %}
+{% load pulse static %}
 
 {% block conteudo %}
-<section class="hero" style="padding-bottom:1.6rem">
+<section class="hero hero-compacto">
+    <span class="hero-marca" aria-hidden="true">{% include "_cavalo.html" %}</span>
+    <div class="hero-texto">
     <h1>Minha agenda</h1>
     <p>Seus interesses, as experiências que você viveu e sugestões feitas para você.</p>
     {% if perfil %}
@@ -10,6 +12,7 @@
         {% for p in perfil %}<span class="chip"><i class="bi {{ p.icone }}"></i> {{ p.nome }}</span>{% endfor %}
     </div>
     {% endif %}
+    </div>
 </section>
 
 {% if participados %}
@@ -47,7 +50,7 @@
         {% for evento in recomendados %}
         <a class="card-reco" href="{% url 'eventos:detalhe' evento.id %}">
             <div class="capa cat-{{ evento.categoria }}">
-                <i class="bi {{ evento.icone }} capa-icone"></i>
+                {% if evento.imagem %}<img src="{{ evento.imagem }}" alt="" loading="lazy">{% else %}<i class="bi {{ evento.icone }} capa-icone"></i>{% endif %}
                 <span class="badge-cat"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
             </div>
             <div class="p-3">

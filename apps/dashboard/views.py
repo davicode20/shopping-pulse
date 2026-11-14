@@ -44,7 +44,7 @@ def novo_evento(request):
         evento = repo.adicionar_evento(form.para_evento())
         messages.success(request, f"\"{evento['nome']}\" publicado! Ele já aparece para os visitantes.")
         return redirect("dashboard:evento", evento_id=evento["id"])
-    return render(request, "administrativo/evento_form.html", {"form": form, "secao": "eventos"})
+    return render(request, "administrativo/evento_form.html", {"form": form, "secao": "novo"})
 
 
 @admin_requerido

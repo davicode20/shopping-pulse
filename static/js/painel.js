@@ -11,11 +11,11 @@
     let ultimos = {};
 
     // Paleta Capim Dourado para os gráficos
-    const COR = { ouro: "#c79747", ouroClaro: "#e3c58f", cafe: "#3b2f22", areia: "#cdb48c", grade: "#f3ede3" };
+    const COR = { ouro: "#e8870f", ouroClaro: "#ffc46b", cafe: "#4a2a14", areia: "#e6b98a", grade: "#f3ede3" };
     // Mesmos tons das capas das categorias (CSS), para o gráfico "conversar" com o resto do sistema
     const CORES_CATEGORIA = {
         "Gastronomia": "#c9774c", "Música": "#87607f", "Tecnologia": "#56758f", "Cultura": "#b4737a",
-        "Esportes": "#749668", "Entretenimento": "#c79747", "Infantil": "#66a39f",
+        "Esportes": "#749668", "Entretenimento": "#e8870f", "Infantil": "#66a39f",
     };
     const coresCategorias = (d) => d.categorias.labels.map((nome, i) => CORES_CATEGORIA[nome] || d.categorias.cores[i]);
     const MENOS_MOVIMENTO = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,8 +41,8 @@
     function criarGraficos(d) {
         const ctxSerie = document.getElementById("gSerie").getContext("2d");
         const grad = ctxSerie.createLinearGradient(0, 0, 0, 260);
-        grad.addColorStop(0, "rgba(199, 151, 71, .30)");
-        grad.addColorStop(1, "rgba(199, 151, 71, 0)");
+        grad.addColorStop(0, "rgba(232, 135, 15, .30)");
+        grad.addColorStop(1, "rgba(232, 135, 15, 0)");
 
         graficos.serie = new Chart(ctxSerie, {
             type: "line",

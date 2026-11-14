@@ -1,10 +1,13 @@
 {% extends "visitante/base_visitante.html" %}
-{% load pulse %}
+{% load pulse static %}
 
 {% block conteudo %}
-<section class="hero" style="padding-bottom:1.6rem">
-    <h1>Ajude a <span class="destaque">decidir</span></h1>
-    <p>Estas ideias ainda não estão confirmadas. O shopping vai realizar as que tiverem mais interesse do público.</p>
+<section class="hero hero-compacto">
+    <span class="hero-marca" aria-hidden="true">{% include "_cavalo.html" %}</span>
+    <div class="hero-texto">
+        <h1>Ajude a <span class="destaque">decidir</span></h1>
+        <p>Estas ideias ainda não estão confirmadas. O shopping vai realizar as que tiverem mais interesse do público.</p>
+    </div>
 </section>
 
 {% include "visitante/_faixa.html" %}
@@ -13,7 +16,7 @@
     {% for evento in eventos %}
     <article class="card-proposta">
         <a href="{% url 'eventos:detalhe' evento.id %}" class="capa cat-{{ evento.categoria }} d-block text-white">
-            <i class="bi {{ evento.icone }} capa-icone"></i>
+            {% if evento.imagem %}<img src="{{ evento.imagem }}" alt="" loading="lazy">{% else %}<i class="bi {{ evento.icone }} capa-icone"></i>{% endif %}
             <span class="badge-cat"><i class="bi {{ evento.icone }}"></i> {{ evento.categoria_nome }}</span>
             <h3>{{ evento.nome }}</h3>
         </a>

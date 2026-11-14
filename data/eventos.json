@@ -7,7 +7,7 @@
     "data": "2026-12-05",
     "horario": "18:00",
     "local": "Praça de Alimentação · Piso L2",
-    "imagem": "",
+    "imagem": "/static/img/eventos/sabores-tocantins.jpg",
     "informacoes": "Entrada gratuita. Degustações sujeitas à disponibilidade.",
     "status": "proposta",
     "investimento_estimado": 15000
@@ -20,7 +20,7 @@
     "data": "2026-11-27",
     "horario": "19:00",
     "local": "Hall Central · Piso L1",
-    "imagem": "",
+    "imagem": "/static/img/eventos/sexta-acustica.jpg",
     "informacoes": "Entrada gratuita. Lugares sentados limitados.",
     "status": "confirmado",
     "investimento_estimado": 4000
@@ -33,7 +33,7 @@
     "data": "2026-12-12",
     "horario": "14:00",
     "local": "Espaço Eventos · Piso L3",
-    "imagem": "",
+    "imagem": "/static/img/eventos/arena-gamer.jpg",
     "informacoes": "Inscrições para o campeonato no local, a partir das 13h.",
     "status": "confirmado",
     "investimento_estimado": 8000
@@ -46,7 +46,7 @@
     "data": "2026-11-29",
     "horario": "10:00",
     "local": "Espaço Kids · Piso L2",
-    "imagem": "",
+    "imagem": "/static/img/eventos/oficina-pequenos-artistas.jpg",
     "informacoes": "Vagas limitadas. Acompanhante obrigatório.",
     "status": "confirmado",
     "investimento_estimado": 2500
@@ -59,7 +59,7 @@
     "data": "2026-11-07",
     "horario": "18:30",
     "local": "Praça de Alimentação · Piso L2",
-    "imagem": "",
+    "imagem": "/static/img/eventos/hamburguer-artesanal.jpg",
     "informacoes": "Consumo à parte. Votação pelo celular.",
     "status": "realizado",
     "investimento_estimado": 7000
@@ -72,7 +72,7 @@
     "data": "2026-11-01",
     "horario": "08:00",
     "local": "Estacionamento Coberto · Setor B",
-    "imagem": "",
+    "imagem": "/static/img/eventos/aulao-funcional.jpg",
     "informacoes": "Leve água e toalha.",
     "status": "realizado",
     "investimento_estimado": 3000
@@ -85,7 +85,7 @@
     "data": "2026-11-08",
     "horario": "19:30",
     "local": "Estacionamento Externo · Setor A",
-    "imagem": "",
+    "imagem": "/static/img/eventos/cine-pipoca.jpg",
     "informacoes": "Traga sua canga. Pipoca gratuita para os primeiros 200.",
     "status": "realizado",
     "investimento_estimado": 9000
@@ -98,7 +98,7 @@
     "data": "2026-10-31",
     "horario": "10:00",
     "local": "Corredor Cultural · Piso L1",
-    "imagem": "",
+    "imagem": "/static/img/eventos/feira-capim-dourado.jpg",
     "informacoes": "Peças à venda diretamente com as artesãs.",
     "status": "realizado",
     "investimento_estimado": 3500
@@ -111,7 +111,7 @@
     "data": "2026-12-10",
     "horario": "19:00",
     "local": "Auditório · Piso L3",
-    "imagem": "",
+    "imagem": "/static/img/eventos/workshop-ia.jpg",
     "informacoes": "Traga seu notebook ou celular.",
     "status": "proposta",
     "investimento_estimado": 6000
@@ -124,7 +124,7 @@
     "data": "2026-12-18",
     "horario": "20:00",
     "local": "Espaço Eventos · Piso L3",
-    "imagem": "",
+    "imagem": "/static/img/eventos/stand-up.jpg",
     "informacoes": "Classificação 16 anos.",
     "status": "proposta",
     "investimento_estimado": 9000
@@ -137,7 +137,7 @@
     "data": "2026-11-22",
     "horario": "17:00",
     "local": "Hall Central · Piso L1",
-    "imagem": "",
+    "imagem": "/static/img/eventos/papai-noel.jpg",
     "informacoes": "Fotos gratuitas até as 21h.",
     "status": "confirmado",
     "investimento_estimado": 12000
@@ -150,7 +150,7 @@
     "data": "2026-11-11",
     "horario": "16:00",
     "local": "Café Lounge · Piso L1",
-    "imagem": "",
+    "imagem": "/static/img/eventos/cafe-especial.jpg",
     "informacoes": "Grupos a cada 30 minutos.",
     "status": "realizado",
     "investimento_estimado": 2000

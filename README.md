@@ -1,4 +1,4 @@
-# Shopping Pulse
+# ShoppDash
 
 > Transformando preferências em experiências. Protótipo do Hackarun Palmas.
 

@@ -5,7 +5,7 @@
 
 {% block corpo %}
 <div class="admin-mobile-nav">
-    <a class="logo" href="{% url 'dashboard:painel' %}"><span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}</a>
+    <a class="logo" href="{% url 'dashboard:painel' %}"><span class="logo-app">{% include "_cavalo.html" %}</span> {{ NOME_PROJETO }}</a>
     <nav>
         <a href="{% url 'dashboard:painel' %}" aria-label="Painel"><i class="bi bi-grid-1x2"></i></a>
         <a href="{% url 'dashboard:eventos' %}" aria-label="Eventos"><i class="bi bi-calendar3"></i></a>
@@ -15,15 +15,15 @@
 </div>
 <div class="admin-layout">
     <aside class="sidebar">
-        <a class="logo" href="{% url 'dashboard:painel' %}"><span class="logo-icone"><i class="bi bi-activity"></i></span> {{ NOME_PROJETO }}</a>
+        <a class="logo" href="{% url 'dashboard:painel' %}"><span class="logo-app">{% include "_cavalo.html" %}</span> {{ NOME_PROJETO }}</a>
         <nav>
             <div class="rotulo">Inteligência</div>
-            <a href="{% url 'dashboard:painel' %}" class="{% if secao == 'painel' %}ativo{% endif %}"><i class="bi bi-grid-1x2"></i> Painel</a>
-            <a href="{% url 'dashboard:painel' %}#ia"><i class="bi bi-stars"></i> Recomendações da IA</a>
-            <a href="{% url 'dashboard:painel' %}#demanda"><i class="bi bi-clipboard-data"></i> Validação de demanda</a>
+            <a href="{% url 'dashboard:painel' %}" data-spy="topo" class="{% if secao == 'painel' %}ativo{% endif %}"><i class="bi bi-grid-1x2"></i> Painel</a>
+            <a href="{% url 'dashboard:painel' %}#ia" data-spy="ia"><i class="bi bi-stars"></i> Recomendações da IA</a>
+            <a href="{% url 'dashboard:painel' %}#demanda" data-spy="demanda"><i class="bi bi-clipboard-data"></i> Validação de demanda</a>
             <div class="rotulo">Programação</div>
             <a href="{% url 'dashboard:eventos' %}" class="{% if secao == 'eventos' %}ativo{% endif %}"><i class="bi bi-calendar3"></i> Eventos</a>
-            <a href="{% url 'dashboard:novo_evento' %}"><i class="bi bi-plus-circle"></i> Novo evento</a>
+            <a href="{% url 'dashboard:novo_evento' %}" class="{% if secao == 'novo' %}ativo{% endif %}"><i class="bi bi-plus-circle"></i> Novo evento</a>
             <div class="rotulo">Demonstração</div>
             <a href="{% url 'eventos:inicio' %}" target="_blank"><i class="bi bi-phone"></i> Ver como visitante</a>
             <form method="post" action="{% url 'dashboard:reiniciar' %}">
@@ -32,8 +32,8 @@
             </form>
         </nav>
         <div class="usuario-admin">
-            <span class="avatar">{{ request.session.admin.usuario|first|upper }}</span>
-            <span class="flex-grow-1 text-truncate">{{ request.session.admin.usuario }}</span>
+            <span class="avatar">{{ request.user.get_username|first|upper }}</span>
+            <span class="flex-grow-1 text-truncate">{{ request.user.get_username }}</span>
             <form method="post" action="{% url 'dashboard:logout' %}">{% csrf_token %}
                 <button type="submit" title="Sair" aria-label="Sair"><i class="bi bi-box-arrow-right"></i></button>
             </form>
@@ -57,13 +57,13 @@
 <script>
     Chart.defaults.font.family = "Jost, system-ui, sans-serif";
     Chart.defaults.font.size = 12.5;
-    Chart.defaults.color = "#6f6556";
+    Chart.defaults.color = "#7a5f4c";
     Chart.defaults.animation.duration = 700;
     Chart.defaults.animation.easing = "easeOutQuart";
     Chart.defaults.plugins.legend.labels.usePointStyle = true;
-    Chart.defaults.plugins.tooltip.backgroundColor = "#1d1812";
-    Chart.defaults.plugins.tooltip.titleColor = "#e3c58f";
-    Chart.defaults.plugins.tooltip.borderColor = "rgba(199, 151, 71, .4)";
+    Chart.defaults.plugins.tooltip.backgroundColor = "#2a1207";
+    Chart.defaults.plugins.tooltip.titleColor = "#ffc46b";
+    Chart.defaults.plugins.tooltip.borderColor = "rgba(232, 135, 15, .4)";
     Chart.defaults.plugins.tooltip.borderWidth = 1;
     Chart.defaults.plugins.tooltip.padding = 10;
     Chart.defaults.plugins.tooltip.cornerRadius = 10;

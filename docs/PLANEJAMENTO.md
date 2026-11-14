@@ -1,4 +1,4 @@
-# Shopping Pulse: Planejamento Técnico Inicial
+# ShoppDash: Planejamento Técnico Inicial
 
 > **Hackarun Palmas · Primeira entrega (sexta-feira, 13/11, até 12h)**
 > *Transformando preferências em experiências.*
@@ -29,7 +29,7 @@
 
 **Problema.** A administração de um shopping decide a programação de eventos com pouca informação sobre o que os visitantes realmente desejam. Isso dificulta três momentos:
 
-| Dimensão | Dificuldade atual | Como o Shopping Pulse responde |
+| Dimensão | Dificuldade atual | Como o ShoppDash responde |
 |---|---|---|
 | **Planejamento** | Não se sabe o que o público quer antes de investir | Publicar ideias e medir a demanda (visualizações, interesse, presença provável, faixa etária) |
 | **Participação** | Divulgação sem interação, pouco engajamento | Cartões interativos estilo *swipe*, recomendações e votação em propostas |
@@ -352,7 +352,7 @@ O ciclo da solução termina em **novo planejamento**. Na vida real, a equipe de
 
 ```mermaid
 flowchart LR
-    A[Painel do Shopping Pulse] -->|"Exportar para o Miro"| B[Backend Django]
+    A[Painel do ShoppDash] -->|"Exportar para o Miro"| B[Backend Django]
     B -->|"Miro REST API"| C[Quadro no Miro]
     C --> D["Recomendações da IA: post-its por prioridade"]
     C --> E["Eventos sugeridos"]
@@ -368,9 +368,9 @@ flowchart LR
    - **cards** com os indicadores calculados (interessados, comparecimento, satisfação);
    - **frames** separando "Manter", "Melhorar", "Testar" e uma linha do tempo vazia para a equipe arrastar os eventos.
 3. A equipe do shopping abre o quadro e, em reunião, decide a próxima programação **com os dados dos visitantes na mesa**.
-4. Os eventos escolhidos voltam para o Shopping Pulse como novas propostas, e o ciclo recomeça.
+4. Os eventos escolhidos voltam para o ShoppDash como novas propostas, e o ciclo recomeça.
 
-**Por que faz sentido:** o Shopping Pulse **gera a inteligência** e o Miro é **onde as pessoas decidem juntas**. A integração conecta a análise de dados ao trabalho colaborativo real da administração.
+**Por que faz sentido:** o ShoppDash **gera a inteligência** e o Miro é **onde as pessoas decidem juntas**. A integração conecta a análise de dados ao trabalho colaborativo real da administração.
 
 **Prioridade:** *desejável*. O fluxo principal do MVP vem primeiro. Se não houver tempo para a integração pela API, a demonstração mostra um quadro do Miro montado com as recomendações reais geradas pelo painel.
 
