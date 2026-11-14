@@ -29,6 +29,24 @@ if not DEBUG and SECRET_KEY in CHAVES_PUBLICAS:
     )
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if h.strip()]
 
+# Hospedagem (Render ou similar): o endereço público entra sozinho na lista de hosts e de origens confiáveis.
+# O Render define RENDER_EXTERNAL_HOSTNAME automaticamente (ex.: shopping-pulse.onrender.com).
+HOST_PUBLICO = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
+if HOST_PUBLICO and "*" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(HOST_PUBLICO)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+if HOST_PUBLICO:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{HOST_PUBLICO}")
+
+# Atrás de um proxy HTTPS (Render, Cloudflare Tunnel...): o proxy avisa que a conexão original era HTTPS.
+# Sem isto, o login falha com "CSRF verification failed" e os links de check-in saem como http://.
+PROXY_CONFIAVEL = os.getenv("DJANGO_PROXY_CONFIAVEL", "True" if HOST_PUBLICO else "False").lower() == "true"
+if PROXY_CONFIAVEL:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True   # cookies de sessão/login só trafegam por HTTPS
+    CSRF_COOKIE_SECURE = True
+
 INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.messages",
@@ -44,6 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # serve CSS/JS/fontes quando DEBUG=False
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -88,6 +107,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"  # destino do collectstatic no deploy
+STORAGES = {
+    # compressão gzip/brotli; sem "manifest" porque os CSS do Bootstrap citam arquivos .map que não vêm junto
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

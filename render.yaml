@@ -1,0 +1,31 @@
+# Deploy no Render (render.com): New → Blueprint → escolha este repositório.
+# IMPORTANTE: os dados ficam em memória, então o serviço precisa rodar em UM processo (--workers 1).
+# Com mais de um processo, cada um teria seus próprios votos e o painel ficaria inconsistente.
+services:
+  - type: web
+    name: shopping-pulse
+    runtime: python
+    plan: free  # no plano free o serviço "dorme" após 15 min sem acesso; o Starter mantém sempre ligado
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.1"
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true  # o Render gera uma chave aleatória
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com"
+      # Preenchidos por você no painel do Render (não vão para o repositório):
+      - key: ADMIN_USUARIO
+        sync: false
+      - key: ADMIN_SENHA_HASH
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MIRO_ACCESS_TOKEN
+        sync: false
+      - key: MIRO_BOARD_ID
+        sync: false

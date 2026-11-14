@@ -57,6 +57,19 @@ Para expor a demo fora da rede local (ex.: ngrok), use `DJANGO_DEBUG=False` e um
 
 **Checagem dos números:** a resposta da IA tem formato garantido por schema, e cada número citado é conferido com os dados enviados (`apps/inteligencia/verificacao.py`). O painel mostra "N de N números conferidos" e destaca em amarelo qualquer número que não exista nos dados.
 
+## Deploy (link público)
+
+O projeto está pronto para o **Render** (`render.yaml` na raiz):
+
+1. Em [render.com](https://render.com), entre com o GitHub → **New → Blueprint** → escolha este repositório.
+2. Preencha as variáveis pedidas: `ADMIN_USUARIO`, `ADMIN_SENHA_HASH` (copie do seu `.env` depois de rodar `python manage.py definir_admin`), `GEMINI_API_KEY`, `MIRO_ACCESS_TOKEN` e `MIRO_BOARD_ID`.
+3. **Apply**. Em alguns minutos o sistema fica em `https://shopping-pulse.onrender.com` (ou nome parecido).
+
+Pontos importantes:
+- **Um processo só** (`--workers 1`): os dados ficam em memória; com mais processos, cada um teria seus próprios votos.
+- **Plano free:** o serviço dorme após 15 min sem acesso; o primeiro acesso depois disso leva cerca de 1 min e os dados voltam ao estado inicial (base simulada). Para a apresentação, use o plano Starter ou abra o link alguns minutos antes.
+- Em produção (`DJANGO_DEBUG=False`) o WhiteNoise serve CSS/JS, os cookies só trafegam por HTTPS e o endereço público entra sozinho em `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS`.
+
 ## Funcionalidades
 
 ### Visitante (mobile first)
