@@ -9,6 +9,7 @@ Acesso à área administrativa, pelo django.contrib.auth (decisão P-002).
 from functools import wraps
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login as entrar, logout as sair
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
